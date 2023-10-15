@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Konfigurator{% endblock %}
+
+{% block javascripts %}
+    {{ encore_entry_script_tags('configurator') }}
+{% endblock %}
+
+{% block body %}
+
+    <div id="app">
+        <Configurator
+            initialize-url="{{ path('app_configurator_init') }}"
+            model-id="{{ modelId }}"
+            trainer-url="{{ path('app_trainer', {id: modelId}) }}"
+            load-model-url="{{ path('app_configurator_loadmodel') }}"
+            update-url="{{ path('app_configurator_update') }}"
+            add-layer-url="{{ path('app_configurator_layer_add') }}"
+            remove-layer-url="{{ path('app_configurator_layer_remove') }}"
+            remove-layer-url="{{ path('app_configurator_layer_remove') }}"
+            save-dtree-config-url="{{ path('app_configurator_save_dtree') }}"
+            save-svm-config-url="{{ path('app_configurator_save_svm') }}"
+        ></Configurator>
+    </div>
+
+{% endblock %}
