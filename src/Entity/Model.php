@@ -61,6 +61,9 @@ class Model implements \JsonSerializable
     #[ORM\OneToOne(mappedBy: 'model', cascade: ['persist', 'remove'])]
     private ?LinRegConfiguration $linRegConfiguration = null;
 
+    #[ORM\OneToOne(mappedBy: 'model', cascade: ['persist', 'remove'])]
+    private ?UploadFile $uploadFile = null;
+
     public function __construct()
     {
         $this->layers = new ArrayCollection();
@@ -282,6 +285,23 @@ class Model implements \JsonSerializable
         return $this;
     }
 
+    public function getUploadFile(): ?UploadFile
+    {
+        return $this->uploadFile;
+    }
+
+    public function setUploadFile(UploadFile $uploadFile): static
+    {
+        // set the owning side of the relation if necessary
+        if ($uploadFile->getModel() !== $this) {
+            $uploadFile->setModel($this);
+        }
+
+        $this->uploadFile = $uploadFile;
+
+        return $this;
+    }
+
     public function jsonSerialize(): array
     {
         return [
@@ -296,6 +316,7 @@ class Model implements \JsonSerializable
             'logRegConfiguration' => $this->logRegConfiguration,
             'linRegConfiguration' => $this->linRegConfiguration,
             'svmConfiguration' => $this->svmConfiguration,
+            'uploadFile' => $this->uploadFile,
         ];
     }
 
