@@ -1,0 +1,76 @@
+
+.nav-link.active,
+.show > .nav-link {
+    box-shadow: 2p 4px 8px rgba(0, 0, 0, 0.1)!important;
+    border: 2px solid black !important;
+}
+
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content {
+    flex: 1;
+}
+
+
+.selectionCard {
+    cursor: pointer;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+.activeCard {
+    background-color: #f7f7f7 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #007bff;  /* Dies ist der Bootstrap-Primärfarbe ähnlich */
+}
+
+.cardContainer {
+    display: flex;
+    flex-direction: column;
+}
+
+.cardContainer .card {
+    flex-grow: 1;
+}
+
+.cardContainer .card .card-body {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.cardContainer .card .cardContent {
+    flex-grow: 1;
+}
+
+.cardContainer .card .cardButtonRow {
+    margin-top: auto;
+}
+
+
+.info-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+.info-text {
+    font-size: 12px;
+    color: gray;
+    margin-top: 2px;
+}
+
+.textIconLink span {
+    vertical-align: top;
+}
+.textIconLink span:nth-child(2) {
+    margin-left: 5px;
+}
