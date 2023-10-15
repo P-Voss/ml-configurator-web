@@ -1,6 +1,6 @@
 <template>
     <div>
-        <ul class="nav nav-pills mb-3 justify-content-center nav-fill d-none d-lg-flex" id="pills-tab" role="tablist">
+        <ul class="nav nav-pills mb-3 justify-content-center nav-fill d-none d-lg-flex" id="pills-tab-lg" role="tablist">
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
                    :class="{'active': currentStep === 'INIT', 'bg-success': initStepCompleted, 'text-light': initStepCompleted}"
