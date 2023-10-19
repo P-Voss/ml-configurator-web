@@ -2,7 +2,7 @@
 
 namespace App\State\Modeltype;
 
-use App\Enum\ModelTypes;
+use App\Entity\LogRegConfiguration;
 
 class LogisticRegressionState extends AbstractState
 {
@@ -21,9 +21,30 @@ class LogisticRegressionState extends AbstractState
         }
     }
 
+    public function setLogRegConfiguration(LogRegConfiguration $configuration)
+    {
+        if ($configuration->getRegularizerType() !== 'none' && !($configuration->getLambda() > 0)) {
+            throw new \Exception('need to set regularization factor');
+        }
+        $currentConfiguration = $this->model->getLogRegConfiguration();
+        if ($currentConfiguration) {
+            $this->entityManager->remove($currentConfiguration);
+            $this->entityManager->flush();
+        }
+        $this->model->setLogRegConfiguration($configuration);
+    }
+
     public function validArchitecture(): bool
     {
-        return false;
+        $configuration = $this->model->getLogRegConfiguration();
+        if (!$configuration) {
+            return false;
+        }
+
+        if ($configuration->getRegularizerType() !== 'none' && !($configuration->getLambda() > 0)) {
+            return false;
+        }
+        return true;
     }
 
 }

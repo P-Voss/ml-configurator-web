@@ -6,7 +6,7 @@ use App\Repository\LinRegConfigurationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: LinRegConfigurationRepository::class)]
-class LinRegConfiguration
+class LinRegConfiguration implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -63,4 +63,13 @@ class LinRegConfiguration
 
         return $this;
     }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'regularizationType' => $this->regularizationType,
+            'alpha' => $this->alpha,
+        ];
+    }
+
 }

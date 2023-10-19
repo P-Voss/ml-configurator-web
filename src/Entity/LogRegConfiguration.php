@@ -6,7 +6,7 @@ use App\Repository\LogRegConfigurationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: LogRegConfigurationRepository::class)]
-class LogRegConfiguration
+class LogRegConfiguration implements \JsonSerializable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -78,4 +78,14 @@ class LogRegConfiguration
 
         return $this;
     }
+
+    public function jsonSerialize(): array
+    {
+        return [
+            'regularizerType' => $this->regularizerType,
+            'solver' => $this->solver,
+            'lambda' => $this->lambda,
+        ];
+    }
+
 }

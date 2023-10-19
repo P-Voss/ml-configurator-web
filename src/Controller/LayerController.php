@@ -3,9 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\DecisiontreeConfiguration;
-use App\Entity\Hyperparameters;
 use App\Entity\Layer;
-use App\Entity\Model;
+use App\Entity\LinRegConfiguration;
+use App\Entity\LogRegConfiguration;
 use App\Entity\SvmConfiguration;
 use App\Entity\User;
 use App\Enum\LayerTypes;
@@ -183,6 +183,83 @@ class LayerController extends AbstractController
 
         try {
             $state->setSvmConfiguration($svmConfiguration);
+            $this->entityManager->flush();
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ]);
+        }
+
+        return new JsonResponse([
+            'success' => true,
+        ]);
+    }
+
+
+    #[Route('/configurator/architecture/logreg', name: 'app_configurator_save_logreg', methods: ["POST"])]
+    public function logreg(Request $request, ModelRepository $repository, #[CurrentUser] User $user): JsonResponse
+    {
+        $model = $repository->find($request->get('id', 0));
+        if (!$model) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($model->getStudent()->getId() !== $user->getId()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $state = AbstractState::getState($model, $this->entityManager);
+        $logRegConfiguration = new LogRegConfiguration();
+        $logRegConfiguration->setRegularizerType($request->get('regularizerType', 'none'))
+            ->setSolver($request->get('solver', 'liblinear'))
+            ->setLambda($request->get('lambda', 0));
+
+        try {
+            $state->setLogRegConfiguration($logRegConfiguration);
+            $this->entityManager->flush();
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ]);
+        }
+
+        return new JsonResponse([
+            'success' => true,
+        ]);
+    }
+
+
+    #[Route('/configurator/architecture/linreg', name: 'app_configurator_save_linreg', methods: ["POST"])]
+    public function linreg(Request $request, ModelRepository $repository, #[CurrentUser] User $user): JsonResponse
+    {
+        $model = $repository->find($request->get('id', 0));
+        if (!$model) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($model->getStudent()->getId() !== $user->getId()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $state = AbstractState::getState($model, $this->entityManager);
+        $linRegConfiguration = new LinRegConfiguration();
+        $linRegConfiguration->setRegularizationType($request->get('regularizationType', 'none'))
+            ->setAlpha($request->get('alpha', 0));
+
+        try {
+            $state->setLinRegConfiguration($linRegConfiguration);
             $this->entityManager->flush();
         } catch (\Exception $exception) {
             return new JsonResponse([
