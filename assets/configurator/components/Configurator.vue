@@ -55,9 +55,17 @@
                         @save-configuration="saveSvmConfiguration"
                         v-if="isSvmArchitecture"
                     />
+                    <LogRegArchitecture
+                        :configuration="model.logRegConfiguration"
+                        @save-configuration="saveLogRegConfiguration"
+                        v-if="isLogRegArchitecture"
+                    />
+                    <LinRegArchitecture
+                        :configuration="model.linRegConfiguration"
+                        @save-configuration="saveLinRegConfiguration"
+                        v-if="isLinRegArchitecture"
+                    />
                     <ArchitectureEmpty v-if="model.architectureType === ''" />
-                    <ArchitectureEmpty v-if="model.architectureType === 'LinRegression'" />
-                    <ArchitectureEmpty v-if="model.architectureType === 'LogRegression'" />
                 </div>
 
             </div>
@@ -73,6 +81,8 @@ import RnnArchitecture from "./ArchitectureStep/RnnArchitecture.vue";
 import DenseArchitecture from "./ArchitectureStep/DenseArchitecture.vue";
 import DtreeArchitecture from "./ArchitectureStep/DtreeArchitecture.vue";
 import SvmArchitecture from "./ArchitectureStep/SvmArchitecture.vue";
+import LogRegArchitecture from "./ArchitectureStep/LogRegArchitecture.vue";
+import LinRegArchitecture from "./ArchitectureStep/LinRegArchitecture.vue";
 import ArchitectureEmpty from "./ArchitectureStep/ArchitectureEmpty.vue";
 
 import {initializeModel, updateModel, loadModel} from "../services/ModelService.js";
@@ -90,6 +100,8 @@ export default {
         removeLayerUrl: String,
         saveDtreeConfigUrl: String,
         saveSvmConfigUrl: String,
+        saveLogRegConfigUrl: String,
+        saveLinRegConfigUrl: String,
     },
     components: {
         Navigation,
@@ -97,6 +109,8 @@ export default {
         DenseArchitecture,
         DtreeArchitecture,
         SvmArchitecture,
+        LogRegArchitecture,
+        LinRegArchitecture,
         ArchitectureEmpty,
         InitForm,
     },
@@ -219,7 +233,7 @@ export default {
         },
         async addLayer(params) {
             let form = new FormData()
-            form.set('id',this.model.id)
+            form.set('id', this.model.id)
             form.set('type', params.type)
             form.set('neurons', params.neurons)
             form.set('returnSequences', params.returnSequences)
@@ -237,7 +251,7 @@ export default {
             console.log("remove")
 
             let form = new FormData()
-            form.set('modelId',this.model.id)
+            form.set('modelId', this.model.id)
             form.set('layerId', layerId)
 
             await ArchitectureService.removeLayer(this.removeLayerUrl, form)
@@ -245,7 +259,7 @@ export default {
         },
         async saveDtreeConfiguration(params) {
             let form = new FormData()
-            form.set('id',this.model.id)
+            form.set('id', this.model.id)
             form.set('maxDepth', params.maxDepth)
             form.set('minSampleSplit', params.minSampleSplit)
             form.set('maxFeatures', params.maxFeatures)
@@ -258,12 +272,31 @@ export default {
         },
         async saveSvmConfiguration(params) {
             let form = new FormData()
-            form.set('id',this.model.id)
+            form.set('id', this.model.id)
             form.set('kernel', params.kernel)
             form.set('c', params.c)
             form.set('degree', params.degree)
 
             await ArchitectureService.setConfiguration(this.saveSvmConfigUrl, form)
+            this.loadModel(this.model.id)
+        },
+        async saveLogRegConfiguration(params) {
+            let form = new FormData()
+            form.set('id', this.model.id)
+            form.set('regularizerType', params.regularizerType)
+            form.set('solver', params.solver)
+            form.set('lambda', params.lambda)
+
+            await ArchitectureService.setConfiguration(this.saveLogRegConfigUrl, form)
+            this.loadModel(this.model.id)
+        },
+        async saveLinRegConfiguration(params) {
+            let form = new FormData()
+            form.set('id', this.model.id)
+            form.set('regularizationType', params.regularizationType)
+            form.set('alpha', params.alpha)
+
+            await ArchitectureService.setConfiguration(this.saveLinRegConfigUrl, form)
             this.loadModel(this.model.id)
         }
     }
