@@ -9,11 +9,14 @@ use App\Entity\LogRegConfiguration;
 use App\Entity\Model;
 use App\Entity\SvmConfiguration;
 use App\Enum\ModelTypes;
+use App\Event\SubjectTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
 abstract class AbstractState implements StateInterface
 {
+
+    use SubjectTrait;
 
     protected Model $model;
     protected readonly EntityManagerInterface $entityManager;
@@ -22,6 +25,13 @@ abstract class AbstractState implements StateInterface
     {
         $this->model = $model;
         $this->entityManager = $entityManager;
+    }
+
+    public function notify(): void
+    {
+        foreach ($this->observers as $observer) {
+            $observer->update($this);
+        }
     }
 
     /**
@@ -62,6 +72,7 @@ abstract class AbstractState implements StateInterface
 
     abstract protected function clearConfiguration();
 
+    abstract public function setHyperParameter(array $params = []);
 
     public function validBaseData(): bool {
         if (mb_strlen(trim($this->model->getName())) < "3") {
@@ -140,6 +151,29 @@ abstract class AbstractState implements StateInterface
         return $this->model;
     }
 
+    public function validFieldConfiguration(): bool
+    {
+        $uploadFile = $this->model->getUploadFile();
+        if (!$uploadFile) {
+            return false;
+        }
+        $configuration = $uploadFile->getFieldConfigurations();
+        if (!$configuration) {
+            return false;
+        }
+        $fields = json_decode($configuration);
+        if (count($fields) === 0) {
+            return false;
+        }
+        foreach ($fields as $field) {
+            if (!$field->completed) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public function jsonSerialize(): array
     {
         $model = $this->getModel();
@@ -148,6 +182,7 @@ abstract class AbstractState implements StateInterface
             'architectureType' => $this->getArchitectureType(),
             'validBaseData' => $this->validBaseData(),
             'validArchitecture' => $this->validArchitecture(),
+            'validFieldConfiguration' => $this->validFieldConfiguration(),
         ];
     }
 

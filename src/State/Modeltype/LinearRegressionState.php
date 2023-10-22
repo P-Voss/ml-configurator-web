@@ -21,6 +21,54 @@ class LinearRegressionState extends AbstractState
         }
     }
 
+    /**
+     * @param array $params
+     * @return void
+     * @throws \Exception
+     */
+    public function setHyperParameter(array $params = [])
+    {
+        if ($params['id']) {
+            unset($params['id']);
+        }
+        $requiredParameters = [
+            'trainingPercentage',
+            'validationPercentage',
+            'learningRate',
+            'maxIterations',
+            'tolerance',
+        ];
+        $keys = array_keys($params);
+        foreach ($requiredParameters as $requiredParameter) {
+            if (!in_array($requiredParameter, $keys)) {
+                throw new \Exception('Missing required parameter: ' . $requiredParameter);
+            }
+        }
+        if ((int) $params['trainingPercentage'] < 50 || (int) $params['trainingPercentage'] > 100) {
+            throw new \Exception('trainingPercentage too low');
+        }
+        if (((int) $params['trainingPercentage'] + (int) $params['validationPercentage']) > 100) {
+            throw new \Exception('trainingPercentage too high');
+        }
+        if ((int) ($params['learningRate'] * 100) < 1) {
+            throw new \Exception('learningRate too low');
+        }
+        if ((int) $params['maxIterations'] < 50) {
+            throw new \Exception('trainingPercentage too low');
+        }
+
+        $hyperParameters = [
+            'trainingPercentage' => (int) $params['trainingPercentage'],
+            'validationPercentage' => max((int) $params['validationPercentage'], 0),
+            'testPercentage' => 100 - (int) $params['trainingPercentage'] - (int) $params['validationPercentage'],
+            'learningRate' => (float) $params['learningRate'],
+            'maxIterations' => (int) $params['maxIterations'],
+            'tolerance' => (float) $params['tolerance'],
+        ];
+        $this->model->setHyperparameters($hyperParameters)
+            ->setUpdatedate(new \DateTime());
+    }
+
     public function setLinRegConfiguration(LinRegConfiguration $configuration)
     {
         if ($configuration->getRegularizationType() === 'none') {

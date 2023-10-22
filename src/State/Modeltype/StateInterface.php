@@ -10,7 +10,7 @@ use App\Entity\Model;
 use App\Entity\SvmConfiguration;
 use App\Enum\ModelTypes;
 
-interface StateInterface extends \JsonSerializable
+interface StateInterface extends \JsonSerializable, \SplSubject
 {
 
     public function setModeltype(ModelTypes $type): StateInterface;
@@ -36,10 +36,14 @@ interface StateInterface extends \JsonSerializable
 
     public function setLinRegConfiguration(LinRegConfiguration $configuration);
 
+    public function setHyperParameter(array $params = []);
+
     public function getModel(): Model;
 
     public function validBaseData(): bool;
 
     public function validArchitecture(): bool;
+
+    public function validFieldConfiguration(): bool;
 
 }

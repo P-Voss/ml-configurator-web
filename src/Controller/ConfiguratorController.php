@@ -47,6 +47,7 @@ class ConfiguratorController extends AbstractController
             ->setLookup($lookup)
             ->setStudent($user)
             ->setCreationdate(new \DateTime())
+            ->setUpdatedate(new \DateTime())
             ->setDescription($request->get('description', ''))
             ->setType($modeltype->value);
 
@@ -55,8 +56,7 @@ class ConfiguratorController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'modelId' => $model->getId(),
-            'requiresArchitectureConfiguration' => ModelTypes::requiresArchitectureConfiguration($modeltype)
+            'redirectUrl' => $this->generateUrl('app_configurator', ['id' => $model->getId()])
         ]);
     }
 
@@ -77,7 +77,6 @@ class ConfiguratorController extends AbstractController
                 'message' => 'invalid modelId',
             ], Response::HTTP_UNAUTHORIZED);
         }
-
 
         try {
             $state = AbstractState::getState($model, $this->entityManager);
@@ -144,13 +143,10 @@ class ConfiguratorController extends AbstractController
         if ($configuration) {
             $this->entityManager->remove($configuration);
         }
-        $hyperParameters = $model->getHyperparameters();
-        if ($hyperParameters) {
-            $this->entityManager->remove($hyperParameters);
-        }
         foreach ($model->getLayers() as $layer) {
             $model->removeLayer($layer);
         }
+        $model->setHyperparameters([]);
         $this->entityManager->remove($model);
         $this->entityManager->flush();
 
