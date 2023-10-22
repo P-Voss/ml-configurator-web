@@ -11,13 +11,16 @@ enum ModelTypes: string
     case MODEL_TYPE_NEUR = "MODEL_TYPE_NEUR";
     case MODEL_TYPE_RNN = "MODEL_TYPE_RNN";
 
-    public static function requiresArchitectureConfiguration(self $value): bool {
+    public static function getModeltypeName(self $value): string {
         return match ($value) {
-            ModelTypes::MODEL_TYPE_DTREE, ModelTypes::MODEL_TYPE_LOG_REGR, ModelTypes::MODEL_TYPE_SVM, ModelTypes::MODEL_TYPE_LIN_REGR => false,
-            ModelTypes::MODEL_TYPE_NEUR, ModelTypes::MODEL_TYPE_RNN => true,
+            ModelTypes::MODEL_TYPE_DTREE => 'Decision Tree',
+            ModelTypes::MODEL_TYPE_LOG_REGR => 'Logistische Regression',
+            ModelTypes::MODEL_TYPE_SVM => 'Support Vector Machine (SVM)',
+            ModelTypes::MODEL_TYPE_LIN_REGR => 'Lineare Regression',
+            ModelTypes::MODEL_TYPE_NEUR => 'Neuronales Netz (Feedforward)',
+            ModelTypes::MODEL_TYPE_RNN => 'Recurrent Neural Network (RNN)',
         };
     }
-
     /**
      * @param ModelTypes $modelType
      * @param LayerTypes $layerType

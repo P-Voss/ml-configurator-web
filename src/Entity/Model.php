@@ -33,9 +33,6 @@ class Model implements \JsonSerializable
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $updatedate = null;
 
-    #[ORM\OneToOne(mappedBy: 'model', cascade: ['persist', 'remove'])]
-    private ?Hyperparameters $hyperparameters = null;
-
     #[ORM\Column(length: 255)]
     private ?string $type = null;
 
@@ -64,9 +61,16 @@ class Model implements \JsonSerializable
     #[ORM\OneToOne(mappedBy: 'model', cascade: ['persist', 'remove'])]
     private ?UploadFile $uploadFile = null;
 
+    #[ORM\OneToMany(mappedBy: 'executedOn', targetEntity: Event::class, orphanRemoval: false)]
+    private Collection $events;
+
+    #[ORM\Column(nullable: true)]
+    private ?array $hyperparameters = null;
+
     public function __construct()
     {
         $this->layers = new ArrayCollection();
+        $this->events = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -130,23 +134,6 @@ class Model implements \JsonSerializable
     public function setUpdatedate(?\DateTimeInterface $updatedate): static
     {
         $this->updatedate = $updatedate;
-
-        return $this;
-    }
-
-    public function getHyperparameters(): ?Hyperparameters
-    {
-        return $this->hyperparameters;
-    }
-
-    public function setHyperparameters(Hyperparameters $hyperparameters): static
-    {
-        // set the owning side of the relation if necessary
-        if ($hyperparameters->getModel() !== $this) {
-            $hyperparameters->setModel($this);
-        }
-
-        $this->hyperparameters = $hyperparameters;
 
         return $this;
     }
@@ -302,6 +289,61 @@ class Model implements \JsonSerializable
         return $this;
     }
 
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): static
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->setExecutedOn($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): static
+    {
+        if ($this->events->removeElement($event)) {
+            // set the owning side to null (unless already changed)
+            if ($event->getExecutedOn() === $this) {
+                $event->setExecutedOn(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getHyperparameters(): ?array
+    {
+        return $this->hyperparameters;
+    }
+
+    public function setHyperparameters(?array $hyperparameters): static
+    {
+        $this->hyperparameters = $hyperparameters;
+
+        return $this;
+    }
+
+    public function getModeltypeName(): string
+    {
+        if (!$this->type) {
+            return '';
+        }
+        try {
+            $modeltype = ModelTypes::tryFrom($this->type);
+            return ModelTypes::getModeltypeName($modeltype);
+        } catch (\ValueError $exception) {
+            return '';
+        }
+    }
+
     public function jsonSerialize(): array
     {
         return [
@@ -316,6 +358,7 @@ class Model implements \JsonSerializable
             'logRegConfiguration' => $this->logRegConfiguration,
             'linRegConfiguration' => $this->linRegConfiguration,
             'svmConfiguration' => $this->svmConfiguration,
+            'hyperparameters' => $this->hyperparameters,
             'uploadFile' => $this->uploadFile,
         ];
     }

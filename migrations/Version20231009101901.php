@@ -25,10 +25,8 @@ final class Version20231009101901 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE SEQUENCE hyperparameters_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE SEQUENCE layer_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE SEQUENCE model_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
-        $this->addSql('CREATE TABLE hyperparameters (id INT NOT NULL, model_id INT NOT NULL, gradient_strategy VARCHAR(50) DEFAULT NULL, batchsize INT DEFAULT NULL, epochs INT NOT NULL, early_stop BOOLEAN NOT NULL, early_stop_treshold INT NOT NULL, early_stop_function VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_570F6AA07975B7E7 ON hyperparameters (model_id)');
         $this->addSql('CREATE TABLE layer (id INT NOT NULL, model_id INT NOT NULL, type VARCHAR(255) NOT NULL, neuron_count INT NOT NULL, activation_function VARCHAR(255) NOT NULL, dropout_quote INT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE INDEX IDX_E4DB211A7975B7E7 ON layer (model_id)');
@@ -48,7 +46,6 @@ final class Version20231009101901 extends AbstractMigration
         $$ LANGUAGE plpgsql;');
         $this->addSql('DROP TRIGGER IF EXISTS notify_trigger ON messenger_messages;');
         $this->addSql('CREATE TRIGGER notify_trigger AFTER INSERT OR UPDATE ON messenger_messages FOR EACH ROW EXECUTE PROCEDURE notify_messenger_messages();');
-        $this->addSql('ALTER TABLE hyperparameters ADD CONSTRAINT FK_570F6AA07975B7E7 FOREIGN KEY (model_id) REFERENCES model (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE layer ADD CONSTRAINT FK_E4DB211A7975B7E7 FOREIGN KEY (model_id) REFERENCES model (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
     }
 
@@ -56,12 +53,9 @@ final class Version20231009101901 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE SCHEMA public');
-        $this->addSql('DROP SEQUENCE hyperparameters_id_seq CASCADE');
         $this->addSql('DROP SEQUENCE layer_id_seq CASCADE');
         $this->addSql('DROP SEQUENCE model_id_seq CASCADE');
-        $this->addSql('ALTER TABLE hyperparameters DROP CONSTRAINT FK_570F6AA07975B7E7');
         $this->addSql('ALTER TABLE layer DROP CONSTRAINT FK_E4DB211A7975B7E7');
-        $this->addSql('DROP TABLE hyperparameters');
         $this->addSql('DROP TABLE layer');
         $this->addSql('DROP TABLE model');
         $this->addSql('DROP TABLE messenger_messages');
