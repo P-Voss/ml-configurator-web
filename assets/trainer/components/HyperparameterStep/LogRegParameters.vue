@@ -85,7 +85,7 @@ export default {
         return {
             params: {
                 trainingPercentage: 60,
-                validationPercentage: 80,
+                validationPercentage: 40,
                 learningRate: 0.01,
                 maxIterations: 1000,
                 tolerance: 0.0001,

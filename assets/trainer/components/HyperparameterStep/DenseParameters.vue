@@ -138,7 +138,7 @@ export default {
         return {
             params: {
                 trainingPercentage: 60,
-                validationPercentage: 80,
+                validationPercentage: 40,
                 optimizer: 'SGD',
                 learningRate: 0.01,
                 batchSize: 32,
