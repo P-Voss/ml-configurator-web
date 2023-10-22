@@ -25,7 +25,7 @@
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
-                   :class="{'disabled' : !initStepCompleted || !architectureStepCompleted}"
+                   :class="{'disabled' : !initStepCompleted}"
                    id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
                     Trainingskonfiguration
                 </a>
@@ -52,7 +52,7 @@
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
-                   :class="{'disabled' : !initStepCompleted || !architectureStepCompleted}"
+                   :class="{'disabled' : !initStepCompleted}"
                    id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
                     Trainingskonfiguration
                 </a>

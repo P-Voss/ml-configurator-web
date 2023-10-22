@@ -198,7 +198,6 @@ export default {
         };
     },
     mounted() {
-        console.log(this.existingId)
         if (this.existingId) {
             this.name = this.existingName
             this.description = this.existingDescription

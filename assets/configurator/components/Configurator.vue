@@ -171,7 +171,6 @@ export default {
             loadModel(this.loadModelUrl, loadForm)
                 .then(response => {
                     let data = response.data
-                    console.log(data)
                     if (data.success) {
                         this.model.id = modelId
                         this.model.name = data.model.name
@@ -192,12 +191,6 @@ export default {
                 .catch(error => {
                     console.log(error)
                 })
-        },
-        initStepActive() {
-            return !this.initStepCompleted
-        },
-        dataStepActive() {
-            return this.initStepCompleted
         },
         async saveModel(params) {
 
@@ -221,9 +214,8 @@ export default {
             } else {
                 initializeModel(this.initializeUrl, form)
                     .then(response => {
-                        console.log(response)
                         if (response.data.success) {
-                            this.loadModel(response.data.modelId)
+                            window.location.replace(response.data.redirectUrl)
                         }
                     })
                     .catch(error => {
@@ -248,7 +240,6 @@ export default {
         },
         async removeLayer(layerId) {
 
-            console.log("remove")
 
             let form = new FormData()
             form.set('modelId', this.model.id)

@@ -2,7 +2,8 @@
     <div class="row">
         <div class="col-12">
             <TrainerNavigation
-                :init-step-completed="initTrainingStepCompleted"
+                :init-step-completed="model.validFieldConfiguration"
+                :hyperparameter-step-completed="model.validHyperparameterConfiguration"
                 :current-step="currentStep"
                 :configurator-url="configuratorUrl"
                 @set-step="val => currentStep = val"
@@ -44,32 +45,14 @@
 
                     <div v-if="uploadComplete && fieldConfigurations && fieldConfigurations.length > 0">
                         <h4>Datei-Details</h4>
-                        <div class="row gy-2">
-                            <div class="col-12 col-lg-4 cardContainer" v-for="(field, index) in fieldConfigurations" :key="index">
-                                <div class="card bg-info" >
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ field.name }}</h5>
-                                        <div class="row" v-if="!field.isTarget">
-                                            <div class="col-6">
-                                                <button @click="setTargetVariable(field.name)" class="btn btn-primary btn-sm">
-                                                    Als Zielvariable setzen
-                                                </button>
-                                            </div>
-                                            <div class="col-6">
-                                                <button @click="openConfigModal(field)" class="btn btn-primary btn-sm">
-                                                    Konfigurieren
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="row" v-if="field.isTarget">
-                                            <div class="col-12">
-                                                <h4>Target</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
+                        <FieldList
+                            @toggle-target="toggleTarget"
+                            @toggle-ignore="toggleIgnore"
+                            @save-configuration="saveConfiguration"
+                            :field-configurations="fieldConfigurations"
+                        />
+
                     </div>
                 </div>
 
@@ -81,7 +64,36 @@
                     role="tabpanel"
                     aria-labelledby="trainer-hyperparameter"
                 >
-
+                    <LogRegParameters
+                        v-if="model.architectureType === 'LogRegression'"
+                        @save-hyperparameters="saveHyperparameter"
+                        :parameters="model.hyperparameters"
+                    />
+                    <DecisionTreeParameters
+                        v-if="model.architectureType === 'DTREE'"
+                        @save-hyperparameters="saveHyperparameter"
+                        :parameters="model.hyperparameters"
+                    />
+                    <SvmParameters
+                        v-if="model.architectureType === 'SVM'"
+                        @save-hyperparameters="saveHyperparameter"
+                        :parameters="model.hyperparameters"
+                    />
+                    <LinRegParameters
+                        v-if="model.architectureType === 'LinRegression'"
+                        @save-hyperparameters="saveHyperparameter"
+                        :parameters="model.hyperparameters"
+                    />
+                    <DenseParameters
+                        v-if="model.architectureType === 'FNN'"
+                        @save-hyperparameters="saveHyperparameter"
+                        :parameters="model.hyperparameters"
+                    />
+                    <RnnParameters
+                        v-if="model.architectureType === 'RNN'"
+                        @save-hyperparameters="saveHyperparameter"
+                        :parameters="model.hyperparameters"
+                    />
                 </div>
 
 
@@ -104,10 +116,25 @@
 import TrainerNavigation from "./Navigation.vue"
 import {loadModel} from "../../configurator/services/ModelService.js"
 import DataService from "../services/DataService.js"
+import FieldList from "./DataStep/FieldList.vue";
+import LogRegParameters from "./HyperparameterStep/LogRegParameters.vue";
+import DecisionTreeParameters from "./HyperparameterStep/DecisionTreeParameters.vue";
+import SvmParameters from "./HyperparameterStep/SvmParameters.vue";
+import LinRegParameters from "./HyperparameterStep/LinRegParameters.vue";
+import DenseParameters from "./HyperparameterStep/DenseParameters.vue";
+import RnnParameters from "./HyperparameterStep/RnnParameters.vue";
+import {isGeneratorFunction} from "regenerator-runtime";
 
 export default {
     name: 'Trainer',
     components: {
+        RnnParameters,
+        DenseParameters,
+        LinRegParameters,
+        SvmParameters,
+        DecisionTreeParameters,
+        LogRegParameters,
+        FieldList,
         TrainerNavigation,
     },
     props: {
@@ -115,6 +142,12 @@ export default {
         loadModelUrl: String,
         configuratorUrl: String,
         uploadUrl: String,
+        ignoreFieldUrl: String,
+        unignoreFieldUrl: String,
+        markTargetUrl: String,
+        removeTargetUrl: String,
+        updateFieldUrl: String,
+        saveHyperparameterUrl: String,
     },
     data() {
         return {
@@ -126,7 +159,10 @@ export default {
                 name: '',
                 description: '',
                 type: '',
+                hyperparameters: {},
                 architectureType: '',
+                validFieldConfiguration: false,
+                validHyperparameterConfiguration: false,
             },
             filedata: {
                 filename: '',
@@ -161,6 +197,7 @@ export default {
                         this.model.description = data.model.description
                         this.model.type = data.model.type
                         this.model.architectureType = data.model.architectureType
+                        this.model.validFieldConfiguration = data.model.validFieldConfiguration
 
                         if (data.model.uploadFile) {
                             this.fieldConfigurations = data.model.uploadFile.fieldConfigurations
@@ -169,6 +206,10 @@ export default {
                             this.filedata.filename = data.model.uploadFile.filename
                             this.filedata.uploadDate = data.model.uploadFile.uploadDate
                             this.filedata.entryCount = data.model.uploadFile.entryCount
+                        }
+                        if (data.model.hyperparameters) {
+                            this.model.hyperparameters = data.model.hyperparameters
+                            this.model.validHyperparameterConfiguration = true
                         }
 
                     }
@@ -204,13 +245,39 @@ export default {
                     console.log(error)
                 })
         },
-        setTargetVariable(headerItem) {
-
+        async toggleTarget(params) {
+            let form = new FormData()
+            form.set('id', this.model.id)
+            form.set('fieldname', params.fieldname)
+            if (params.markTarget) {
+                await DataService.toggleFieldState(this.markTargetUrl, form)
+            } else {
+                await DataService.toggleFieldState(this.removeTargetUrl, form)
+            }
+            this.loadModel(this.model.id)
         },
-        openConfigModal(headerItem) {
-
+        async toggleIgnore(params) {
+            let form = new FormData()
+            form.set('id', this.model.id)
+            form.set('fieldname', params.fieldname)
+            if (params.setIgnore) {
+                await DataService.toggleFieldState(this.ignoreFieldUrl, form)
+            } else {
+                await DataService.toggleFieldState(this.unignoreFieldUrl, form)
+            }
+            this.loadModel(this.model.id)
         },
-
+        async saveConfiguration(form) {
+            form.set('id', this.model.id)
+            await DataService.updateField(this.updateFieldUrl, form)
+            this.loadModel(this.model.id)
+        },
+        async saveHyperparameter(form) {
+            form.set('id', this.model.id)
+            let response = await DataService.saveHyperparameter(this.saveHyperparameterUrl, form)
+            console.log(response)
+            this.loadModel(this.model.id)
+        }
     }
 };
 </script>

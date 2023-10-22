@@ -21,18 +21,24 @@
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
-                   :class="{'active': currentStep === 'HYPERPARAMETER', 'disabled' : !initStepCompleted}"
+                   :class="{'active': currentStep === 'HYPERPARAMETER', 'bg-success': hyperparameterStepCompleted, 'text-light': hyperparameterStepCompleted, 'disabled' : !initStepCompleted}"
                    @click="() => {
                        this.$emit('set-step', 'HYPERPARAMETER')
                        currentStep = 'HYPERPARAMETER'
                    }"
-                   id="trainer-hyperparameter-tab-lg" data-bs-toggle="pill" href="#trainer-hyperparameter" role="tab" aria-controls="trainer-hyperparameter" aria-selected="false">
+                   id="trainer-hyperparameter-tab-lg"
+                   data-bs-toggle="pill"
+                   href="#trainer-hyperparameter"
+                   role="tab"
+                   aria-controls="trainer-hyperparameter"
+                   aria-selected="false"
+                >
                     Hyperparameter
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
-                   :class="{'active': currentStep === 'TRAINING', 'disabled' : !initStepCompleted}"
+                   :class="{'active': currentStep === 'TRAINING', 'disabled' : !initStepCompleted|| !hyperparameterStepCompleted}"
                    @click="() => {
                        this.$emit('set-step', 'TRAINING')
                        currentStep = 'TRAINING'
@@ -72,30 +78,47 @@
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
-                   :class="{'active': currentStep === 'HYPERPARAMETER', 'disabled' : !initStepCompleted}"
+                   :class="{'active': currentStep === 'HYPERPARAMETER', 'bg-success': hyperparameterStepCompleted, 'text-light': hyperparameterStepCompleted, 'disabled' : !initStepCompleted}"
                    @click="() => {
                        this.$emit('set-step', 'HYPERPARAMETER')
                        currentStep = 'HYPERPARAMETER'
                    }"
-                   id="trainer-hyperparameter-tab" data-bs-toggle="pill" href="#trainer-hyperparameter" role="tab" aria-controls="trainer-hyperparameter" aria-selected="false">
+                   id="trainer-hyperparameter-tab"
+                   data-bs-toggle="pill"
+                   href="#trainer-hyperparameter"
+                   role="tab"
+                   aria-controls="trainer-hyperparameter"
+                   aria-selected="false"
+                >
                     Hyperparameter
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
-                   :class="{'active': currentStep === 'TRAINING', 'disabled' : !initStepCompleted}"
+                   :class="{'active': currentStep === 'TRAINING', 'disabled' : !initStepCompleted || !hyperparameterStepCompleted}"
                    @click="() => {
                        this.$emit('set-step', 'TRAINING')
                        currentStep = 'TRAINING'
                    }"
-                   id="trainer-training-tab" data-bs-toggle="pill" href="#trainer-training" role="tab" aria-controls="trainer-training" aria-selected="false">
+                   id="trainer-training-tab"
+                   data-bs-toggle="pill"
+                   href="#trainer-training"
+                   role="tab"
+                   aria-controls="trainer-training"
+                   aria-selected="false"
+                >
                     Training
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
                    :class="{'disabled' : !initStepCompleted || !hyperparameterStepCompleted || !trainingStepCompleted}"
-                   id="trainer-execute-tab" :href="executorUrl" role="tab" aria-controls="trainer-execute" aria-selected="false">
+                   id="trainer-execute-tab"
+                   :href="executorUrl"
+                   role="tab"
+                   aria-controls="trainer-execute"
+                   aria-selected="false"
+                >
                     Anwendung
                 </a>
             </li>
