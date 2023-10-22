@@ -21,9 +21,9 @@ class IndexController extends AbstractController
     {}
 
     #[Route('/index', name: 'app_index')]
-    public function index(#[CurrentUser] User $user): Response
+    public function index(#[CurrentUser] User $user, ModelRepository $repository): Response
     {
-        $models = $user->getModels();
+        $models = $repository->findBy(['student' => $user->getId()], ['updatedate' => 'DESC']);
         return $this->render('index/index.html.twig', [
             'models' => $models
         ]);
