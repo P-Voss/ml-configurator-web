@@ -7,6 +7,7 @@
                 :trainer-url="trainerUrl"
                 :current-step="currentStep"
                 @set-step="val => currentStep = val"
+                v-if="modelState === 'COMPLETED'"
             />
             <div class="tab-content" id="pills-tabContent" v-if="modelState === 'COMPLETED'">
                 <div
@@ -65,7 +66,6 @@
                         @save-configuration="saveLinRegConfiguration"
                         v-if="isLinRegArchitecture"
                     />
-                    <ArchitectureEmpty v-if="model.architectureType === ''" />
                 </div>
 
             </div>
@@ -83,7 +83,6 @@ import DtreeArchitecture from "./ArchitectureStep/DtreeArchitecture.vue";
 import SvmArchitecture from "./ArchitectureStep/SvmArchitecture.vue";
 import LogRegArchitecture from "./ArchitectureStep/LogRegArchitecture.vue";
 import LinRegArchitecture from "./ArchitectureStep/LinRegArchitecture.vue";
-import ArchitectureEmpty from "./ArchitectureStep/ArchitectureEmpty.vue";
 
 import {initializeModel, updateModel, loadModel} from "../services/ModelService.js";
 import ArchitectureService from "../services/ArchitectureService.js";
@@ -111,7 +110,6 @@ export default {
         SvmArchitecture,
         LogRegArchitecture,
         LinRegArchitecture,
-        ArchitectureEmpty,
         InitForm,
     },
     data() {
