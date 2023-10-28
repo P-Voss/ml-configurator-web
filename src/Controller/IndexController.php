@@ -21,7 +21,7 @@ class IndexController extends AbstractController
     {}
 
     #[Route('/', name: 'app_index_no_locale')]
-    public function indexNoLcocale(): Response
+    public function indexNoLocale(): Response
     {
         return $this->redirectToRoute('app_index', ['_locale' => 'en']);
     }
