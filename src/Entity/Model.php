@@ -338,7 +338,7 @@ class Model implements \JsonSerializable
         }
         try {
             $modeltype = ModelTypes::tryFrom($this->type);
-            return ModelTypes::getModeltypeName($modeltype);
+            return ModelTypes::getModeltypeLocalizationKey($modeltype);
         } catch (\ValueError $exception) {
             return '';
         }

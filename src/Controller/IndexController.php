@@ -20,7 +20,13 @@ class IndexController extends AbstractController
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {}
 
-    #[Route('/index', name: 'app_index')]
+    #[Route('/', name: 'app_index_no_locale')]
+    public function indexNoLcocale(): Response
+    {
+        return $this->redirectToRoute('app_index', ['_locale' => 'en']);
+    }
+
+    #[Route('/{_locale<en|de>}/index', name: 'app_index')]
     public function index(#[CurrentUser] User $user, ModelRepository $repository): Response
     {
         $models = $repository->findBy(['student' => $user->getId()], ['updatedate' => 'DESC']);
@@ -28,7 +34,6 @@ class IndexController extends AbstractController
             'models' => $models
         ]);
     }
-
 
     #[Route('/loadmodel', name: 'app_configurator_loadmodel', methods: ["POST"])]
     public function loadModel(Request $request, ModelRepository $repository, #[CurrentUser] User $user): Response
@@ -64,7 +69,7 @@ class IndexController extends AbstractController
     }
 
 
-    #[Route('/configurator/{id}', name: 'app_configurator')]
+    #[Route('/{_locale<en|de>}/configurator/{id}', name: 'app_configurator')]
     public function configurator(#[CurrentUser] User $user, int $id = null): Response
     {
         $validModelId = false;
@@ -83,7 +88,7 @@ class IndexController extends AbstractController
     }
 
 
-    #[Route('/casestudy', name: 'app_casestudy')]
+    #[Route('/{_locale<en|de>}/casestudy', name: 'app_casestudy')]
     public function casestudy(): Response
     {
         return $this->render('index/casestudy.html.twig', [

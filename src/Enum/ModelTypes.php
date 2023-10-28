@@ -21,6 +21,18 @@ enum ModelTypes: string
             ModelTypes::MODEL_TYPE_RNN => 'Recurrent Neural Network (RNN)',
         };
     }
+
+    public static function getModeltypeLocalizationKey(self $value): string {
+        return match ($value) {
+            ModelTypes::MODEL_TYPE_DTREE => 'models.type.dtree',
+            ModelTypes::MODEL_TYPE_LOG_REGR => 'models.type.logreg',
+            ModelTypes::MODEL_TYPE_SVM => 'models.type.svm',
+            ModelTypes::MODEL_TYPE_LIN_REGR => 'models.type.linreg',
+            ModelTypes::MODEL_TYPE_NEUR => 'models.type.nn',
+            ModelTypes::MODEL_TYPE_RNN => 'models.type.rnn',
+        };
+    }
+
     /**
      * @param ModelTypes $modelType
      * @param LayerTypes $layerType

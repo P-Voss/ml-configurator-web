@@ -11,33 +11,33 @@
             <div class="col-md-6 col-lg-4">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title text-center">Login</h5>
+                        <h5 class="card-title text-center">{{ "login.headline"|trans }}</h5>
                         <form action="{{ path('app_login') }}" method="post">
                             <div class="mb-3">
-                                <label for="username" class="form-label">Email-Adresse</label>
+                                <label for="username" class="form-label">{{ "login.label.username"|trans }}</label>
                                 <input
                                         type="email"
                                         class="form-control"
                                         id="username"
                                         name="_username"
                                         aria-describedby="emailHelp"
-                                        placeholder="Email eingeben (student@example.com)"
+                                        placeholder="{{ "login.placeholder.username"|trans }}"
                                         value="student@example.com"
                                 />
                             </div>
                             <div class="mb-3">
-                                <label for="password" class="form-label">Passwort</label>
+                                <label for="password" class="form-label">{{ "login.label.password"|trans }}</label>
                                 <input
                                         type="password"
                                         class="form-control"
                                         id="password"
                                         name="_password"
-                                        placeholder="Passwort eingeben (12345678)"
+                                        placeholder="{{ "login.placeholder.password"|trans }}"
                                         value="12345678"
                                 />
                             </div>
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-                            <input type="submit" class="btn btn-primary w-100" value="Login" />
+                            <input type="submit" class="btn btn-primary w-100" value="{{ "login.button.submit"|trans }}" />
                         </form>
                     </div>
                 </div>

@@ -1,0 +1,35 @@
+login:
+  headline: "Welcome to ML-Conf"
+
+  label.username: "Username"
+  label.password: "Password"
+
+  placeholder.username: "enter username (student@example.com)"
+  placeholder.password: "enter password (12345678)"
+
+  button.submit: "login"
+app:
+  nav.list: "my models"
+  nav.new: "new model"
+  nav.casetudy: "case study"
+  nav.logout: "logout"
+
+  footer.label: "created as part of the bachelor thesis 'Entwicklung einer No-Code Plattform zur Konfiguration von Machine Learning Modellen'"
+index:
+  button.configure: "configure"
+  button.train: "train"
+  button.execute: "execute"
+
+  label.creationdate: "created on "
+  label.changedate: "last changed on "
+
+  tooltip.copy: "copy model"
+  tooltip.delete: "delete model"
+
+models:
+  type.rnn: "Recurrent Neural Network (RNN)"
+  type.nn: "Feedforward Neural Network"
+  type.linreg: "Linear Regression"
+  type.logreg: "Logistical Regression"
+  type.svm: "Support Vector Machine (SVM)"
+  type.dtree: "Decision Tree"

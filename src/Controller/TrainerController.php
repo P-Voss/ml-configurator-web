@@ -24,7 +24,7 @@ class TrainerController extends AbstractController
     {
     }
 
-    #[Route('/trainer/index/{id}', name: 'app_trainer')]
+    #[Route('/{_locale<en|de>}/trainer/index/{id}', name: 'app_trainer')]
     public function index(#[CurrentUser] User $user, int $id = null): Response
     {
         $validModelId = false;

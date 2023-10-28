@@ -1,0 +1,35 @@
+login:
+  headline: "Willkommen"
+
+  label.username: "Username"
+  label.password: "Passwort"
+
+  placeholder.username: "Email eingeben (student@example.com)"
+  placeholder.password: "Passwort eingeben (12345678)"
+
+  button.submit: "Login"
+app:
+  nav.list: "Meine Modelle"
+  nav.new: "Neues Modell"
+  nav.casetudy: "Case Study"
+  nav.logout: "Logout"
+
+  footer.label: "Entwickelt im Rahmen der Bachelorarbeit 'Entwicklung einer No-Code Plattform zur Konfiguration von Machine Learning Modellen'"
+index:
+  button.configure: "konfigurieren"
+  button.train: "trainieren"
+  button.execute: "ausführen"
+
+  label.creationdate: "Erstellt am: "
+  label.changedate: "Zuletzt geändert am: "
+
+  tooltip.copy: "Kopieren"
+  tooltip.delete: "Löschen"
+
+models:
+  type.rnn: "Recurrent Neural Network (RNN)"
+  type.nn: "Neuronales Netz (Feedforward)"
+  type.linreg: "Lineare Regression"
+  type.logreg: "Logistische Regression"
+  type.svm: "Support Vector Machine (SVM)"
+  type.dtree: "Decision Tree"
