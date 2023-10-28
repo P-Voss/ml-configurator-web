@@ -1,14 +1,11 @@
 <template>
     <div class="row g-3">
         <div class="col-12">
-            Die Architektur eines neuronalen Netzes ist ein entscheidender Faktor für dessen Leistung und
-            Anpassungsfähigkeit. Jede Schicht des Netzes hat einen speziellen Zweck und kann dazu beitragen, unterschiedliche
-            Aspekte deiner Daten zu modellieren. Hier wirst du die Möglichkeit haben, deine
-            eigene Netzwerkarchitektur Schicht für Schicht aufzubauen.
+            {{$t("label.neuralnetIntro")}}
         </div>
 
         <div class="col-12 col-lg-8">
-            <div class="h2">Art der Schicht</div>
+            <div class="h2">{{$t("headline.layertype")}}</div>
             <div class="row gy-3">
                 <div class="col-12 col-lg-6 cardContainer">
                     <div
@@ -17,11 +14,10 @@
                         :class="{'activeCard' : type === layerTypes.LAYER_TYPE_DENSE}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">Dense</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">(Vollverknüpft)</h6>
+                            <h5 class="card-title">{{$t("card.denseLabel")}}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{$t("card.denseSubLabel")}}</h6>
                             <p class="card-text">
-                                Dies sind die Standard-Schichten, die du in den meisten neuronalen Netzen findest.
-                                Jedes Neuron in einer Dense-Schicht ist mit jedem Neuron in der vorherigen Schicht verbunden.
+                                {{$t("card.denseDescription")}}
                             </p>
                         </div>
                     </div>
@@ -33,12 +29,10 @@
                         :class="{'activeCard' : type === layerTypes.LAYER_TYPE_LSTM}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">LSTM</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">(Long Short-Term Memory)</h6>
+                            <h5 class="card-title">{{$t("card.lstmLabel")}}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{$t("card.lstmSubLabel")}}</h6>
                             <p class="card-text">
-                                Spezialisierte rekurrente Schicht, die langfristige Abhängigkeiten in sequentiellen Daten
-                                modelliert. Ideal für Zeitreihen und Aufgaben mit zeitlichen Abhängigkeiten durch ihre "Gates",
-                                die entscheiden, welche Informationen gespeichert oder verworfen werden.
+                                {{$t("card.lstmDescription")}}
                             </p>
                         </div>
                     </div>
@@ -50,12 +44,10 @@
                         :class="{'activeCard' : type === layerTypes.LAYER_TYPE_GRU}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">GRU</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">(Gated Recurrent Unit)</h6>
+                            <h5 class="card-title">{{$t("card.gruLabel")}}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{$t("card.gruSubLabel")}}</h6>
                             <p class="card-text">
-                                Rekurrente Schicht ähnlich wie LSTM, jedoch mit einfacherer Struktur. Kombiniert
-                                bestimmte Gates für Effizienz und ist oft schneller im Training.
-                                Gut für sequentielle Mustererkennung.
+                                {{$t("card.gruDescription")}}
                             </p>
                         </div>
                     </div>
@@ -67,10 +59,9 @@
                         :class="{'activeCard' : type === layerTypes.LAYER_TYPE_DROPOUT}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">Dropout</h5>
+                            <h5 class="card-title">{{$t("card.dropoutLabel")}}</h5>
                             <p class="card-text">
-                                Eine Technik zur Reduzierung von Overfitting, bei der zufällig ausgewählte
-                                Neuronen während des Trainingsprozesses "ausgeschaltet" werden.
+                                {{$t("card.dropoutDescription")}}
                             </p>
                         </div>
                     </div>
@@ -80,7 +71,7 @@
         </div>
 
         <div class="col-12 col-lg-4">
-            <div class="h2">Modell-Architektur</div>
+            <div class="h2">{{$t("headline.architecture")}}</div>
             <div class="row">
                 <div class="col-12" v-for="layer in layers">
                     <div class="card">
@@ -106,10 +97,10 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="layerModalLabel" v-if="type === layerTypes.LAYER_TYPE_DENSE">Dense Layer</h5>
-                        <h5 class="modal-title" id="layerModalLabel" v-if="type === layerTypes.LAYER_TYPE_LSTM">LSTM Layer</h5>
-                        <h5 class="modal-title" id="layerModalLabel" v-if="type === layerTypes.LAYER_TYPE_GRU">GRU Layer</h5>
-                        <h5 class="modal-title" id="layerModalLabel" v-if="type === layerTypes.LAYER_TYPE_DROPOUT">Dropout-Regularisierung</h5>
+                        <h5 class="modal-title" id="layerModalLabel" v-if="type === layerTypes.LAYER_TYPE_DENSE">{{$t("card.denseLabel")}}</h5>
+                        <h5 class="modal-title" id="layerModalLabel" v-if="type === layerTypes.LAYER_TYPE_LSTM">{{$t("card.lstmLabel")}}</h5>
+                        <h5 class="modal-title" id="layerModalLabel" v-if="type === layerTypes.LAYER_TYPE_GRU">{{$t("card.gruLabel")}}</h5>
+                        <h5 class="modal-title" id="layerModalLabel" v-if="type === layerTypes.LAYER_TYPE_DROPOUT">{{$t("card.dropoutLabel")}}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="modalOpen = false"></button>
                     </div>
                     <div class="modal-body">

@@ -1,18 +1,18 @@
 <template>
     <form @submit.prevent="handleSubmit">
         <div class="mb-3">
-            <label for="neurons" class="form-label">Neuronenzahl:</label>
+            <label for="neurons" class="form-label">{{$t("label.denseNeurons")}}</label>
             <div class="input-group">
                 <input type="number" class="form-control" id="neurons" v-model="layer.neurons" />
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('neurons')">?</button>
             </div>
             <div v-if="showingInfo === 'neurons'" class="form-text">
-                Bestimmt die Anzahl der Neuronen in dieser Schicht. Mehr Neuronen erlauben komplexere Modelle, können aber auch zu Overfitting führen.
+                {{$t("helptext.denseneuron")}}
             </div>
         </div>
 
         <div class="mb-3">
-            <label for="activation" class="form-label">Aktivierungsfunktion:</label>
+            <label for="activation" class="form-label">{{$t("label.denseActivation")}}</label>
             <div class="input-group">
                 <select class="form-select" id="activation" v-model="layer.activationFunction">
                     <option value="relu">ReLu</option>
@@ -22,72 +22,63 @@
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('activation')">?</button>
             </div>
             <div v-if="showingInfo === 'activation'" class="form-text">
-                Definiert, wie die Ausgabe eines Neurons berechnet wird.
+                {{$t("helptext.activationFunction")}}
                 <p>
-                    <span class="fw-bold">ReLu: </span>Beliebt für Zwischenschichten, da es schnelles Training ermöglicht
-                    und nicht saturiert. Es setzt alle negativen Werte auf null und behält positive Werte bei.
-                    Aber Vorsicht vor "toten" Neuronen, die nie aktiviert werden.
+                    <span class="fw-bold">ReLu: </span>{{$t("helptext.activationFunctionRelu")}}
                 </p>
                 <p>
-                    <span class="fw-bold">Sigmoid: </span>Begrenzt Ausgaben zwischen 0 und 1. Sie eignet sich besonders
-                    gut für Ausgabeschichten von binären Klassifikationsproblemen. Wegen ihrer sättigenden Natur und der
-                    Gefahr des verschwindenden Gradienten nicht für tiefe Netzwerke empfohlen.
+                    <span class="fw-bold">Sigmoid: </span>{{$t("helptext.activationFunctionSigmoid")}}
                 </p>
                 <p>
-                    <span class="fw-bold">Tanh: </span>Wie Sigmoid, aber mit Ausgaben zwischen -1 und 1. Es zentriert
-                    die Daten, was oft vorteilhaft ist, aber es kann auch saturieren.
+                    <span class="fw-bold">Tanh: </span>{{$t("helptext.activationFunctionTanh")}}
                 </p>
             </div>
         </div>
 
         <div class="mb-3">
-            <label for="regularization" class="form-label">Regularisierung:</label>
+            <label for="regularization" class="form-label">{{$t("label.denseRegularization")}}</label>
             <div class="input-group">
                 <select class="form-select" id="regularization" v-model="layer.regularizationType">
-                    <option value="none">Keine</option>
+                    <option value="none">None</option>
                     <option value="l1">L1</option>
                     <option value="l2">L2</option>
                 </select>
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('regularization')">?</button>
             </div>
             <div v-if="showingInfo === 'regularization'" class="form-text">
-                Reduziert Overfitting durch Bestrafen großer Gewichtswerte.
+                {{$t("helptext.regularizetionTypeNet")}}
                 <p>
-                    <span class="fw-bold">L1: </span>Bestraft die absolute Größe der Gewichte; kann zu spärlichen Gewichtsmatrizen führen.
+                    <span class="fw-bold">L1: </span>{{$t("helptext.regularizetionTypeNetL1")}}
                 </p>
                 <p>
-                    <span class="fw-bold">L2: </span>Bestraft das Quadrat der Gewichtsgrößen; gebräuchlicher als L1.
+                    <span class="fw-bold">L2: </span>{{$t("helptext.regularizetionTypeNetL2")}}
                 </p>
             </div>
         </div>
 
         <div class="mb-3" v-if="layer.regularizationType !== 'none'">
-            <label for="lambda" class="form-label">Lambda:</label>
+            <label for="lambda" class="form-label">Lambda</label>
             <input type="number" class="form-control mt-2" id="lambda" v-model="layer.lambda" placeholder="Lambda-Wert" max="1" min="0" step="0.001" />
 
             <div v-if="showingInfo === 'regularization'" class="form-text">
                 <p>
-                    <span class="fw-bold">Lambda-Wert: </span>
-                    Der Lambda-Wert steuert die Stärke der Regularisierung. Ein höherer Wert führt zu
-                    stärkerer Regularisierung, wodurch das Modell vorsichtiger wird und große Gewichtswerte vermeidet.
-                    Dies kann Overfitting reduzieren, aber ein zu hoher Wert kann zu Underfitting führen. Beginnen
-                    Sie mit einem kleinen Wert (z.B. 0,001) und justieren Sie bei Bedarf.
+                    <span class="fw-bold">Lambda: </span>{{$t("helptext.regularizetionTypeNetLambda")}}
                 </p>
             </div>
         </div>
 
         <div class="mb-3">
-            <label for="dropout" class="form-label">Dropout-Rate:</label>
+            <label for="dropout" class="form-label">{{$t("label.dropout")}}</label>
             <div class="input-group">
                 <input type="number" class="form-control" id="dropout" v-model="layer.dropoutRate" placeholder="0.0 - 1.0" min="0" max="1" step="0.01"/>
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('dropout')">?</button>
             </div>
             <div v-if="showingInfo === 'dropout'" class="form-text">
-                Ein Mechanismus gegen Overfitting. Ein bestimmter Prozentsatz der Neuronen wird zufällig in jedem Trainingsschritt "ausgeschaltet".
+                {{$t("helptext.dropout")}}
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Schicht hinzufügen</button>
+        <button type="submit" class="btn btn-primary">{{$t("buttons.addDense")}}</button>
     </form>
 </template>
 

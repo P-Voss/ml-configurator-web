@@ -9,7 +9,7 @@
                        currentStep = 'INIT'
                    }"
                    id="pills-basis-tab" data-bs-toggle="pill" href="#pills-basis" role="tab" aria-controls="pills-basis" aria-selected="true">
-                    Modellauswahl
+                    {{$t("navigation.modelselection")}}
                 </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -20,14 +20,14 @@
                        currentStep = 'ARCHITECTURE'
                    }"
                    id="pills-architektur-tab" data-bs-toggle="pill" href="#pills-architektur" role="tab" aria-controls="pills-architektur" aria-selected="false">
-                    Architektur
+                    {{$t("navigation.architecture")}}
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
                    :class="{'disabled' : !initStepCompleted}"
                    id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
-                    Trainingskonfiguration
+                    {{$t("navigation.training")}}
                 </a>
             </li>
         </ul>
@@ -39,7 +39,7 @@
                    :class="{'active': currentStep === 'INIT', 'bg-success': initStepCompleted, 'text-light': initStepCompleted}"
                    @click="currentStep = 'INIT'"
                    id="pills-basis-tab" data-bs-toggle="pill" href="#pills-basis" role="tab" aria-controls="pills-basis" aria-selected="true">
-                    Modellauswahl
+                    {{$t("navigation.modelselection")}}
                 </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -47,14 +47,14 @@
                    :class="{'active': currentStep === 'ARCHITECTURE', 'disabled' : !initStepCompleted, 'bg-success': architectureStepCompleted, 'text-light': architectureStepCompleted}"
                    @click="currentStep = 'ARCHITECTURE'"
                    id="pills-architektur-tab" data-bs-toggle="pill" href="#pills-architektur" role="tab" aria-controls="pills-architektur" aria-selected="false">
-                    Architektur
+                    {{$t("navigation.architecture")}}
                 </a>
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
                    :class="{'disabled' : !initStepCompleted}"
                    id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
-                    Trainingskonfiguration
+                    {{$t("navigation.training")}}
                 </a>
             </li>
         </ul>

@@ -1,18 +1,18 @@
 <template>
     <div class="row g-3">
         <div class="col-12 col-lg-3">
-            <label class="form-label" for="modelname">Name *</label>
+            <label class="form-label" for="modelname">{{$t("label.name")}} *</label>
             <input type="text" class="form-control" id="modelname" v-model="name" required>
         </div>
 
         <div class="col-12 col-lg-9">
-            <label class="form-label" for="description">Beschreibung</label>
+            <label class="form-label" for="description">{{$t("label.description")}}</label>
             <input type="text" class="form-control" id="description" v-model="description" required>
         </div>
 
         <div class="col-12">
             <div class="row">
-                <div class="h2">Aufgabentyp</div>
+                <div class="h2">{{$t("headline.tasktype")}}</div>
             </div>
             <div class="row">
                 <div class="col-12 col-lg-6 cardContainer">
@@ -22,11 +22,9 @@
                         :class="{'activeCard' : taskType === tasktypes.TASK_TYPE_CLASSIFICATION}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">Klassifizierung</h5>
+                            <h5 class="card-title">{{$t("card.classificationLabel")}}</h5>
                             <p class="card-text">
-                                Die Klassifizierung ist ein Überwachtes Lernen, bei dem das Ziel darin besteht,
-                                eine Eingabe (wie ein Bild, Text oder ein anderer Datentyp) einer der vordefinierten Kategorien zuzuordnen.
-                                Beispielsweise könnte man versuchen, Bilder von Tieren als "Hund", "Katze" oder "Vogel" zu klassifizieren.
+                                {{$t("card.classificationDescription")}}
                             </p>
                         </div>
                     </div>
@@ -38,11 +36,9 @@
                         :class="{'activeCard' : taskType === tasktypes.TASK_TYPE_REGRESSION}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">Regressionsanalyse</h5>
+                            <h5 class="card-title">{{$t("card.regressionLabel")}}</h5>
                             <p class="card-text">
-                                Regressionsanalysen versuchen, den Zusammenhang zwischen Eingabevariablen (Merkmale) und
-                                einer kontinuierlichen Ausgabevariable (Ziel) zu modellieren. Zum Beispiel könnte man den Preis
-                                eines Hauses basierend auf Merkmalen wie Größe, Lage und Alter vorhersagen.
+                                {{$t("card.regressionDescription")}}
                             </p>
                         </div>
                     </div>
@@ -53,7 +49,7 @@
 
         <div class="col-12" v-if="taskType === tasktypes.TASK_TYPE_CLASSIFICATION">
             <div class="row">
-                <div class="h2">Modelltyp</div>
+                <div class="h2">{{$t("headline.modeltype")}}</div>
             </div>
             <div class="row">
                 <div class="col-12 col-lg-4 cardContainer">
@@ -63,10 +59,10 @@
                         :class="{'activeCard' : modelType === modelTypes.MODEL_TYPE_DTREE}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">Decision Tree</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">(Entscheidungsbaum)</h6>
+                            <h5 class="card-title">{{$t("card.dtreeLabel")}}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{$t("card.dtreeSubLabel")}}</h6>
                             <p class="card-text">
-                                Entscheidungsbäume teilen Daten rekursiv in Untergruppen, um Entscheidungen auf der Grundlage von Eingabemerkmalen zu treffen.
+                                {{$t("card.dtreeDescription")}}
                             </p>
                         </div>
                     </div>
@@ -78,10 +74,9 @@
                         :class="{'activeCard' : modelType === modelTypes.MODEL_TYPE_LOG_REGR}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">Logistische Regression</h5>
+                            <h5 class="card-title">{{$t("card.logregLabel")}}</h5>
                             <p class="card-text">
-                                Dieses Modell schätzt die Wahrscheinlichkeit, dass eine gegebene Eingabe zu einer bestimmten Klasse gehört.
-                                Es ist besonders nützlich für binäre Klassifizierungsaufgaben, kann aber auch für mehrklassige Aufgaben verwendet werden.
+                                {{$t("card.logregDescription")}}
                             </p>
                         </div>
                     </div>
@@ -93,12 +88,10 @@
                         :class="{'activeCard' : modelType === modelTypes.MODEL_TYPE_SVM}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">SVM</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">(Support Vector Machines)</h6>
+                            <h5 class="card-title">{{$t("card.svmLabel")}}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{$t("card.svmSubLabel")}}</h6>
                             <p class="card-text">
-                                Ein Modell, das versucht, eine optimale Trennlinie oder -fläche zwischen Datenklassen zu finden.
-                                Es ist besonders nützlich für komplexe Klassifikationsprobleme, kann aber auch für Regression verwendet
-                                werden.
+                                {{$t("card.svmDescription")}}
                             </p>
                         </div>
                     </div>
@@ -109,7 +102,7 @@
 
         <div class="col-12" v-if="taskType === tasktypes.TASK_TYPE_REGRESSION">
             <div class="row">
-                <div class="h2">Modelltyp</div>
+                <div class="h2">{{$t("headline.modeltype")}}</div>
             </div>
             <div class="row">
                 <div class="col-12 col-lg-4 cardContainer">
@@ -119,9 +112,9 @@
                         :class="{'activeCard' : modelType === modelTypes.MODEL_TYPE_LIN_REGR}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">Lineare Regression</h5>
+                            <h5 class="card-title">{{$t("card.linregLabel")}}</h5>
                             <p class="card-text">
-                                Dieses Modell versucht, einen linearen Zusammenhang zwischen den Eingabemerkmalen und dem Zielwert zu finden.
+                                {{$t("card.linregDescription")}}
                             </p>
                         </div>
                     </div>
@@ -133,10 +126,9 @@
                         :class="{'activeCard' : modelType === modelTypes.MODEL_TYPE_NEUR}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">Neuronales Netz</h5>
+                            <h5 class="card-title">{{$t("card.nnLabel")}}</h5>
                             <p class="card-text">
-                                Ein komplexes Modell, das aus vielen miteinander verbundenen "Neuronen" besteht.
-                                Es kann nicht-lineare Zusammenhänge modellieren und ist für eine Vielzahl von Aufgaben geeignet, einschließlich Regressionsproblemen.
+                                {{$t("card.nnDescription")}}
                             </p>
                         </div>
                     </div>
@@ -148,11 +140,10 @@
                         :class="{'activeCard' : modelType === modelTypes.MODEL_TYPE_RNN}"
                     >
                         <div class="card-body">
-                            <h5 class="card-title">RNN</h5>
-                            <h6 class="card-subtitle mb-2 text-muted">(Recurrent Neural Network)</h6>
+                            <h5 class="card-title">{{$t("card.rnnLabel")}}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{$t("card.rnnSubLabel")}}</h6>
                             <p class="card-text">
-                                Eine spezielle Art von neuronalem Netzwerk, das für sequentielle Daten konzipiert ist.
-                                Es ist besonders nützlich für Zeitreihen- oder Textdaten.
+                                {{$t("card.rnnDescription")}}
                             </p>
                         </div>
                     </div>
@@ -161,7 +152,7 @@
         </div>
 
         <div class="col-12 justify-content-end" v-if="formCompleted">
-            <button class="btn btn-primary" @click="initializeModel">Speichern</button>
+            <button class="btn btn-primary" @click="initializeModel">{{$t("button.save")}}</button>
         </div>
     </div>
 </template>

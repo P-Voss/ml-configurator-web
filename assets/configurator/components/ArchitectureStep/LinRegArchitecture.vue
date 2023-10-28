@@ -2,47 +2,40 @@
     <form @submit.prevent="handleSubmit" class="gx-4">
         <div class="row mb-3">
             <div class="col-12 col-lg-6">
-                <label for="regularizationType" class="form-label">Regularisierungstyp:</label>
+                <label for="regularizationType" class="form-label">{{$t("label.linregRegularization")}}</label>
                 <div class="input-group">
                     <select class="form-select" id="regularizationType" v-model="params.regularizationType">
-                        <option value="none">Keine Regularisierung</option>
-                        <option value="l1">L1-Regularisierung (Lasso)</option>
-                        <option value="l2">L2-Regularisierung (Ridge)</option>
+                        <option value="none">{{$t("option.linregRegularizationNone")}}</option>
+                        <option value="l1">{{$t("option.linregRegularizationL1")}}</option>
+                        <option value="l2">{{$t("option.linregRegularizationL2")}}</option>
                     </select>
                     <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('regularizationType')">?</button>
                 </div>
                 <div v-if="showingInfo === 'regularizationType'" class="form-text">
-                    Der Regularisierungstyp steuert die Art der Strafe, die auf das Modell angewendet wird, um Overfitting zu vermeiden.
+                    {{$t("helptext.linregRegularization")}}
                     <p>
-                        <span class="fw-bold">Keine Regularisierung: </span>Das Modell wird ohne Regularisierung trainiert.
+                        <span class="fw-bold">{{$t("option.linregRegularizationL1")}}: </span>{{$t("helptext.linregRegularizationL1")}}
                     </p>
                     <p>
-                        <span class="fw-bold">L1-Regularisierung (Lasso): </span> Fördert das Modell, dünn besetzte Gewichte zu lernen,
-                        wodurch irrelevante oder schwach wirkende Features eliminiert werden können.
-                    </p>
-                    <p>
-                        <span class="fw-bold">L2-Regularisierung (Ridge): </span> Fügt der Fehlerfunktion eine Strafterm hinzu,
-                        die proportional zum Quadrat der Summe der Gewichte ist. Dies führt dazu, dass die Gewichte kleiner werden,
-                        aber nicht auf Null reduziert werden.
+                        <span class="fw-bold">{{$t("option.linregRegularizationL2")}}: </span>{{$t("helptext.linregRegularizationL2")}}
                     </p>
                 </div>
             </div>
             <div class="col-12 col-lg-6">
-                <label for="alpha" class="form-label">Alpha:</label>
+                <label for="alpha" class="form-label">Alpha</label>
                 <div class="input-group">
                     <input type="number" class="form-control" id="alpha" v-model="params.alpha" />
                     <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('alpha')">?</button>
                 </div>
                 <div v-if="showingInfo === 'alpha'" class="form-text">
-                    Der Alpha-Parameter kontrolliert die Stärke der Regularisierung. Ein höherer Alpha-Wert führt zu einer stärkeren
-                    Regularisierung. Die optimale Wahl von Alpha ist datenabhängig und sollte durch Cross-Validation bestimmt werden.
+                    {{$t("helptext.linregAlpha")}}
                 </div>
             </div>
         </div>
 
         <div class="row mb-3">
             <div class="col-12">
-                <button type="submit" class="btn btn-primary">Speichern</button>
+                <button type="submit" class="btn btn-primary">{{$t("button.save")}}</button>
             </div>
         </div>
     </form>

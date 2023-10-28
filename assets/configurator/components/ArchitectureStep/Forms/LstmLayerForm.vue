@@ -3,34 +3,30 @@
 
         <!-- Einheiten/Neuronen -->
         <div class="mb-3">
-            <label for="units" class="form-label">Einheiten (Neuronen):</label>
+            <label for="units" class="form-label">{{$t("label.recNeurons")}}:</label>
             <div class="input-group">
                 <input type="number" class="form-control" id="units" v-model="layer.neurons" />
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('units')">?</button>
             </div>
             <div v-if="showingInfo === 'units'" class="form-text">
                 <p>
-                    In LSTM-Layern bezieht sich der Begriff 'Einheiten' auf die Anzahl der LSTM-Zellen in der Schicht.
-                    Jede Einheit enthält den Mechanismus des LSTM, einschließlich der verschiedenen Gates und des internen Zellzustands.
-                    Sie können sich eine Einheit grob als ein 'erweitertes Neuron' vorstellen, das speziell für sequenzielle Daten entwickelt wurde.
+                    {{$t("helptext.lstmNeuron")}}
                 </p>
             </div>
         </div>
 
         <div class="mb-3">
             <label class="form-check-label">
-                <input type="checkbox" class="form-check-input" v-model="layer.returnSequences"> Rückgabesequenzen
+                <input type="checkbox" class="form-check-input" v-model="layer.returnSequences">{{$t("label.recSequence")}}
             </label>
             <button type="button" class="btn btn-outline-secondary ms-2" @click="toggleInfo('returnSequences')">?</button>
             <div v-if="showingInfo === 'returnSequences'" class="form-text">
-                Aktivieren Sie diese Option, wenn Sie die gesamte Sequenz der Ausgaben anstelle der letzten Ausgabe zurückgeben möchten.
-                Dies ist besonders nützlich, wenn Sie eine zeitliche Abfolge an einen anderen LSTM- oder rekurrenten Layer weitergeben möchten.
-                Wenn Sie beispielsweise ein Modell für die Satzgenerierung oder die Vorhersage von Zeitreihen mit mehreren zukünftigen Punkten erstellen, benötigen Sie die vollständige Sequenz.
+                {{$t("helptext.lstmSequence")}}
             </div>
         </div>
 
         <div class="mb-3">
-            <label for="activation" class="form-label">Aktivierungsfunktion:</label>
+            <label for="activation" class="form-label">{{$t("label.denseActivation")}}</label>
             <div class="input-group">
                 <select class="form-select" id="activation" v-model="layer.activationFunction">
                     <option value="tanh">Tanh</option>
@@ -40,27 +36,21 @@
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('activation')">?</button>
             </div>
             <div v-if="showingInfo === 'activation'" class="form-text">
-                Definiert, wie die Ausgabe eines Neurons berechnet wird. Typischerweise wird Tanh für LSTM-Aktivierungen verwendet.
-                ReLU kann in manchen Fällen funktionieren, birgt aber das Risiko des Gradienten-Explodierens.
+                {{$t("helptext.activationFunctionLstm")}}
                 <p>
-                    <span class="fw-bold">ReLu: </span>Beliebt für Zwischenschichten, da es schnelles Training ermöglicht
-                    und nicht saturiert. Es setzt alle negativen Werte auf null und behält positive Werte bei.
-                    Aber Vorsicht vor "toten" Neuronen, die nie aktiviert werden.
+                    <span class="fw-bold">ReLu: </span>{{$t("helptext.activationFunctionRelu")}}
                 </p>
                 <p>
-                    <span class="fw-bold">Sigmoid: </span>Begrenzt Ausgaben zwischen 0 und 1. Sie eignet sich besonders
-                    gut für Ausgabeschichten von binären Klassifikationsproblemen. Wegen ihrer sättigenden Natur und der
-                    Gefahr des verschwindenden Gradienten nicht für tiefe Netzwerke empfohlen.
+                    <span class="fw-bold">Sigmoid: </span>{{$t("helptext.activationFunctionSigmoid")}}
                 </p>
                 <p>
-                    <span class="fw-bold">Tanh: </span>Wie Sigmoid, aber mit Ausgaben zwischen -1 und 1. Es zentriert
-                    die Daten, was oft vorteilhaft ist, aber es kann auch saturieren.
+                    <span class="fw-bold">Tanh: </span>{{$t("helptext.activationFunctionTanh")}}
                 </p>
             </div>
         </div>
 
         <div class="mb-3">
-            <label for="regularization" class="form-label">Regularisierung:</label>
+            <label for="regularization" class="form-label">{{$t("label.denseRegularization")}}</label>
             <div class="input-group">
                 <select class="form-select" id="regularization" v-model="layer.regularizationType">
                     <option value="none">Keine</option>
@@ -70,58 +60,53 @@
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('regularization')">?</button>
             </div>
             <div v-if="showingInfo === 'regularization'" class="form-text">
-                Reduziert Overfitting durch Bestrafen großer Gewichtswerte.
+                {{$t("helptext.regularizetionTypeNet")}}
                 <p>
-                    <span class="fw-bold">L1: </span>Bestraft die absolute Größe der Gewichte; kann zu spärlichen Gewichtsmatrizen führen.
+                    <span class="fw-bold">L1: </span>{{$t("helptext.regularizetionTypeNetL1")}}
                 </p>
                 <p>
-                    <span class="fw-bold">L2: </span>Bestraft das Quadrat der Gewichtsgrößen; gebräuchlicher als L1.
+                    <span class="fw-bold">L2: </span>{{$t("helptext.regularizetionTypeNetL2")}}
                 </p>
             </div>
         </div>
 
         <div class="mb-3" v-if="layer.regularizationType !== 'none'">
-            <label for="lambda" class="form-label">Lambda:</label>
+            <label for="lambda" class="form-label">Lambda</label>
             <input type="number" class="form-control mt-2" id="lambda" v-model="layer.lambda" placeholder="Lambda-Wert" max="1" min="0" step="0.001" />
 
             <div v-if="showingInfo === 'regularization'" class="form-text">
                 <p>
-                    <span class="fw-bold">Lambda-Wert: </span>
-                    Der Lambda-Wert steuert die Stärke der Regularisierung. Ein höherer Wert führt zu
-                    stärkerer Regularisierung, wodurch das Modell vorsichtiger wird und große Gewichtswerte vermeidet.
-                    Dies kann Overfitting reduzieren, aber ein zu hoher Wert kann zu Underfitting führen. Beginnen
-                    Sie mit einem kleinen Wert (z.B. 0,001) und justieren Sie bei Bedarf.
+                    <span class="fw-bold">Lambda: </span>{{$t("helptext.regularizetionTypeNetLambda")}}
                 </p>
             </div>
         </div>
 
         <!-- Dropout -->
         <div class="mb-3">
-            <label for="dropout" class="form-label">Dropout-Rate:</label>
+            <label for="dropout" class="form-label">{{$t("label.dropout")}}</label>
             <div class="input-group">
                 <input type="number" class="form-control" id="dropout" v-model="layer.dropoutRate" placeholder="0.0 - 1.0" min="0" max="1" step="0.01"/>
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('dropout')">?</button>
             </div>
             <div v-if="showingInfo === 'dropout'" class="form-text">
-                Ein Mechanismus gegen Overfitting. Ein bestimmter Prozentsatz der Eingabe-Einheiten wird zufällig in jedem Trainingsschritt "ausgeschaltet".
+                {{$t("helptext.dropout")}}
             </div>
         </div>
 
         <!-- Rekurrenter Dropout -->
         <div class="mb-3">
-            <label for="recurrentDropout" class="form-label">Rekurrenter Dropout:</label>
+            <label for="recurrentDropout" class="form-label">{{$t("label.recDropout")}}</label>
             <div class="input-group">
                 <input type="number" class="form-control" id="recurrentDropout" v-model="layer.recurrentDropoutRate" placeholder="0.0 - 1.0" min="0" max="1" step="0.01"/>
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('recurrentDropout')">?</button>
             </div>
             <div v-if="showingInfo === 'recurrentDropout'" class="form-text">
-                Während "Dropout" die Eingabeverbindungen zu den LSTM-Einheiten beeinflusst, betrifft "rekurrenter Dropout" die
-                rekurrenten Verbindungen innerhalb der Einheiten. Dies kann dabei helfen, Overfitting in zeitlichen Sequenzen zu verhindern.
+                {{$t("helptext.recDropout")}}
             </div>
         </div>
 
         <!-- Button zum Hinzufügen -->
-        <button type="submit" class="btn btn-primary">LSTM-Schicht hinzufügen</button>
+        <button type="submit" class="btn btn-primary">{{$t("buttons.addLstm")}}</button>
 
     </form>
 </template>
