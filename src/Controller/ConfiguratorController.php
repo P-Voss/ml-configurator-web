@@ -109,7 +109,7 @@ class ConfiguratorController extends AbstractController
         ]);
     }
 
-    #[Route('/configurator/delete', name: 'app_configurator_delete', methods: ["POST"])]
+    #[Route('/{_locale<en|de>}/configurator/delete', name: 'app_configurator_delete', methods: ["POST"])]
     public function delete(Request $request, ModelRepository $repository, #[CurrentUser] User $user): Response
     {
         $model = $repository->find($request->get('modelId', 0));
@@ -154,7 +154,7 @@ class ConfiguratorController extends AbstractController
     }
 
 
-    #[Route('/configurator/copy', name: 'app_configurator_copy', methods: ["POST"])]
+    #[Route('/{_locale<en|de>}/configurator/copy', name: 'app_configurator_copy', methods: ["POST"])]
     public function copy(Request $request, ModelRepository $repository, #[CurrentUser] User $user): Response
     {
         return $this->redirectToRoute('app_index');

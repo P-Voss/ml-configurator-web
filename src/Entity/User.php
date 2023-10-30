@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -35,6 +36,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\OneToMany(mappedBy: 'executedBy', targetEntity: Event::class, orphanRemoval: true)]
     private Collection $events;
+
+    #[ORM\Column]
+    private ?bool $isDemoUser = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $lastActionDatetime = null;
 
     public function __construct()
     {
@@ -171,4 +178,44 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    public function isIsDemoUser(): ?bool
+    {
+        return $this->isDemoUser;
+    }
+
+    public function setIsDemoUser(bool $isDemoUser): static
+    {
+        $this->isDemoUser = $isDemoUser;
+
+        return $this;
+    }
+
+    public function getLastActionDatetime(): ?\DateTimeInterface
+    {
+        return $this->lastActionDatetime;
+    }
+
+    public function setLastActionDatetime(?\DateTimeInterface $lastActionDatetime): static
+    {
+        $this->lastActionDatetime = $lastActionDatetime;
+
+        return $this;
+    }
+
+    public function hoursSinceLastActivity()
+    {
+        if (!$this->isDemoUser) {
+            return 0;
+        }
+        $currentDatetime = new \DateTime();
+        $dateDiff = date_diff($currentDatetime, $this->getLastActionDatetime());
+
+        /**
+         * coarse calculation, exact count of hours is not neccessary
+         */
+        $days = $dateDiff->y * 365 + $dateDiff->m * 30 + $dateDiff->d;
+        return $days * 24 + $dateDiff->h;
+    }
+
 }

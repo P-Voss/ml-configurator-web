@@ -1,5 +1,5 @@
 login:
-  headline: "Willkommen"
+  headline_form: "Willkommen"
 
   label.username: "Username"
   label.password: "Passwort"
@@ -8,6 +8,7 @@ login:
   placeholder.password: "Passwort eingeben (12345678)"
 
   button.submit: "Login"
+  button.demouser: "Login mit Demo User"
 app:
   nav.list: "Meine Modelle"
   nav.new: "Neues Modell"

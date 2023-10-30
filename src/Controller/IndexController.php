@@ -29,6 +29,10 @@ class IndexController extends AbstractController
     #[Route('/{_locale<en|de>}/index', name: 'app_index')]
     public function index(#[CurrentUser] User $user, ModelRepository $repository): Response
     {
+        if ($user->isIsDemoUser()) {
+            $user->setLastActionDatetime(new \DateTime());
+            $this->entityManager->flush();
+        }
         $models = $repository->findBy(['student' => $user->getId()], ['updatedate' => 'DESC']);
         return $this->render('index/index.html.twig', [
             'models' => $models

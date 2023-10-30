@@ -1,5 +1,5 @@
 login:
-  headline: "Welcome to ML-Conf"
+  headline_form: "Welcome to ML-Conf"
 
   label.username: "Username"
   label.password: "Password"
@@ -8,6 +8,7 @@ login:
   placeholder.password: "enter password (12345678)"
 
   button.submit: "login"
+  button.demouser: "login as demo user"
 app:
   nav.list: "my models"
   nav.new: "new model"

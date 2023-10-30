@@ -7,33 +7,33 @@
     {% endif %}
 
     <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-4">
+        <div class="row justify-content-between">
+            <div class="col-12 col-lg-3">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title text-center">{{ "login.headline"|trans }}</h5>
-                        <form action="{{ path('app_login') }}" method="post">
+                        <h5 class="card-title text-center">{{ "login.headline_form"|trans }}</h5>
+                        <form action="{{ path('app_login') }}" method="post" id="loginform">
                             <div class="mb-3">
                                 <label for="username" class="form-label">{{ "login.label.username"|trans }}</label>
                                 <input
-                                        type="email"
-                                        class="form-control"
-                                        id="username"
-                                        name="_username"
-                                        aria-describedby="emailHelp"
-                                        placeholder="{{ "login.placeholder.username"|trans }}"
-                                        value="student@example.com"
+                                    type="email"
+                                    class="form-control"
+                                    id="username"
+                                    name="_username"
+                                    aria-describedby="emailHelp"
+                                    placeholder="{{ "login.placeholder.username"|trans }}"
+                                    value="student@example.com"
                                 />
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">{{ "login.label.password"|trans }}</label>
                                 <input
-                                        type="password"
-                                        class="form-control"
-                                        id="password"
-                                        name="_password"
-                                        placeholder="{{ "login.placeholder.password"|trans }}"
-                                        value="12345678"
+                                    type="password"
+                                    class="form-control"
+                                    id="password"
+                                    name="_password"
+                                    placeholder="{{ "login.placeholder.password"|trans }}"
+                                    value="12345678"
                                 />
                             </div>
                             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
@@ -42,6 +42,38 @@
                     </div>
                 </div>
             </div>
+            <div class="col-12 col-lg-7">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">Demo Logins</h5>
+                        <div style="max-height: 500px; overflow-y: auto; overflow-x: hidden">
+                            {% for username, password in sampleUsers %}
+                                <div class="row p-3">
+                                    <div class="col-8">
+                                        {{ username }}
+                                    </div>
+                                    <div class="col-4">
+                                        <button
+                                            class="btn btn-info"
+                                            onclick="insertCredentials('{{ username }}', '{{ password }}')"
+                                        >
+                                            {{ "login.button.demouser"|trans }}
+                                        </button>
+                                    </div>
+                                </div>
+                                <hr />
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+    <script>
+        function insertCredentials(username, password) {
+            document.getElementById('username').value = username
+            document.getElementById('password').value = password
+            document.getElementById('loginform').submit()
+        }
+    </script>
 {% endblock %}
