@@ -5,7 +5,7 @@
         <div class="mb-3">
             <label for="units" class="form-label">{{$t("label.recNeurons")}}:</label>
             <div class="input-group">
-                <input type="number" class="form-control" id="units" v-model="layer.neurons" />
+                <input type="number" class="form-control" id="units" v-model="layer.neurons" min="8" step="1" />
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('units')">?</button>
             </div>
             <div v-if="showingInfo === 'units'" class="form-text">
@@ -106,7 +106,7 @@
         </div>
 
         <!-- Button zum Hinzufügen -->
-        <button type="submit" class="btn btn-primary">{{$t("buttons.addLstm")}}</button>
+        <button type="submit" class="btn btn-primary">{{$t("button.addLstm")}}</button>
 
     </form>
 </template>

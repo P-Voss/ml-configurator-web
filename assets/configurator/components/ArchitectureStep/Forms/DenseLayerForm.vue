@@ -3,7 +3,7 @@
         <div class="mb-3">
             <label for="neurons" class="form-label">{{$t("label.denseNeurons")}}</label>
             <div class="input-group">
-                <input type="number" class="form-control" id="neurons" v-model="layer.neurons" />
+                <input type="number" class="form-control" id="neurons" v-model="layer.neurons" min="8" step="1" />
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('neurons')">?</button>
             </div>
             <div v-if="showingInfo === 'neurons'" class="form-text">
@@ -78,7 +78,7 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">{{$t("buttons.addDense")}}</button>
+        <button type="submit" class="btn btn-primary">{{$t("button.addDense")}}</button>
     </form>
 </template>
 
@@ -94,7 +94,7 @@ export default {
             showingInfo: '',
             layer: {
                 type: 'LAYER_TYPE_DENSE',
-                neurons: 0,
+                neurons: 32,
                 activationFunction: "relu",
                 regularizationType: "none",
                 lambda: 0,
