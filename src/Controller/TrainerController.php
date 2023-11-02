@@ -89,19 +89,11 @@ class TrainerController extends AbstractController
         $defaultConfiguration = [
             'name' => '',
             'ignore' => false,
-            'completed' => true,
             'isTarget' => false,
             'datatype' => 'text',
             'configuration' => [
                 'scalingMethod' => 'standardization',
                 'outlierTreatment' => 'remove',
-                'normalizationMethod' => 'l1',
-                'tokenizationMethod' => 'word',
-                'specialCharacterHandling' => 'remove',
-                'vectorizationMethod' => 'tfidf',
-                'padding' => false,
-                'paddingType' => 'none',
-                'paddingSize' => 0,
             ],
         ];
         $i = 0;
@@ -431,6 +423,64 @@ class TrainerController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse(['success' => true]);
+    }
+
+
+    #[Route('/trainer/training/submit', name: 'app_trainer_training_submit', methods: ['POST'])]
+    public function createTask(
+        #[CurrentUser] User $user,
+        Request $request,
+        ModelRepository $repository,
+        string $trainingPythonDir,
+        string $trainingCsvDir,
+        string $checkpointDir,
+        string $modelDir,
+        string $scalerDir,
+        string $errorDir,
+    )
+    {
+        $model = $repository->find($request->get('id', 0));
+        if (!$model) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_NOT_FOUND);
+        }
+        if ($model->getStudent()->getId() !== $user->getId()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        try {
+            $state = AbstractState::getState($model, $this->entityManager);
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ]);
+        }
+        $codegenerator = $state->getCodegenerator();
+
+        try {
+            $uploadFile = $model->getUploadFile();
+            $data = $uploadFile->getContent();
+            $dataFilename = 'data_' . $model->getLookup() . '.txt';
+            $dataPath = $trainingCsvDir . $dataFilename;
+            file_put_contents($dataPath, stream_get_contents($data));
+
+            $script = $codegenerator->generateTrainingScript($dataPath);
+            $filename = 'training_' . $model->getLookup() . '.py';
+            file_put_contents($trainingPythonDir . $filename, $script);
+
+        } catch (\Exception $exception) {
+            dd($exception);
+        }
+        dd($script);
+        echo json_encode($state);
+        exit;
+
     }
 
 }

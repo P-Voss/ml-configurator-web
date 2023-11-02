@@ -104,7 +104,9 @@
                     role="tabpanel"
                     aria-labelledby="trainer-training"
                 >
-
+                    <Training
+                        @submit-training-task="submitTrainingTask"
+                    />
                 </div>
             </div>
         </div>
@@ -116,6 +118,8 @@
 import TrainerNavigation from "./Navigation.vue"
 import {loadModel} from "../../configurator/services/ModelService.js"
 import DataService from "../services/DataService.js"
+import TrainingService from "../services/TrainingService.js";
+
 import FieldList from "./DataStep/FieldList.vue";
 import LogRegParameters from "./HyperparameterStep/LogRegParameters.vue";
 import DecisionTreeParameters from "./HyperparameterStep/DecisionTreeParameters.vue";
@@ -123,11 +127,12 @@ import SvmParameters from "./HyperparameterStep/SvmParameters.vue";
 import LinRegParameters from "./HyperparameterStep/LinRegParameters.vue";
 import DenseParameters from "./HyperparameterStep/DenseParameters.vue";
 import RnnParameters from "./HyperparameterStep/RnnParameters.vue";
-import {isGeneratorFunction} from "regenerator-runtime";
+import Training from "./TrainingStep/Training.vue";
 
 export default {
     name: 'Trainer',
     components: {
+        Training,
         RnnParameters,
         DenseParameters,
         LinRegParameters,
@@ -148,6 +153,7 @@ export default {
         removeTargetUrl: String,
         updateFieldUrl: String,
         saveHyperparameterUrl: String,
+        submitTaskUrl: String,
     },
     data() {
         return {
@@ -277,6 +283,12 @@ export default {
             let response = await DataService.saveHyperparameter(this.saveHyperparameterUrl, form)
             console.log(response)
             this.loadModel(this.model.id)
+        },
+        async submitTrainingTask() {
+            const form = new FormData()
+            form.set('id', this.model.id)
+            let response = await TrainingService.submitTrainingTask(this.submitTaskUrl, form)
+            console.log(response)
         }
     }
 };
