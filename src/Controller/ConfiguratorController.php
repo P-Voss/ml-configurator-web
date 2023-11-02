@@ -23,7 +23,7 @@ class ConfiguratorController extends AbstractController
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {}
 
-    #[Route('/configurator/initialize', name: 'app_configurator_init', methods: ["POST"])]
+    #[Route('/{_locale<en|de>}/configurator/initialize', name: 'app_configurator_init', methods: ["POST"])]
     public function initialize(Request $request, ModelRepository $repository, #[CurrentUser] User $user): JsonResponse
     {
         try {
@@ -56,7 +56,7 @@ class ConfiguratorController extends AbstractController
 
         return new JsonResponse([
             'success' => true,
-            'redirectUrl' => $this->generateUrl('app_configurator', ['id' => $model->getId()])
+            'redirectUrl' => $this->generateUrl('app_configurator', ['id' => $model->getId(), '_locale' => $request->getLocale()])
         ]);
     }
 
