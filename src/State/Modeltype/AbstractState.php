@@ -2,6 +2,8 @@
 
 namespace App\State\Modeltype;
 
+use App\CodeGenerator\AbstractCodegenerator;
+use App\CodeGenerator\Feedforward;
 use App\Entity\DecisiontreeConfiguration;
 use App\Entity\Layer;
 use App\Entity\LinRegConfiguration;
@@ -32,6 +34,11 @@ abstract class AbstractState implements StateInterface
         foreach ($this->observers as $observer) {
             $observer->update($this);
         }
+    }
+
+    public function getCodegenerator(): AbstractCodegenerator
+    {
+        return new Feedforward($this->model);
     }
 
     /**
@@ -165,10 +172,14 @@ abstract class AbstractState implements StateInterface
         if (count($fields) === 0) {
             return false;
         }
+        $hasTarget = false;
         foreach ($fields as $field) {
-            if (!$field->completed) {
-                return false;
+            if ($field->isTarget) {
+                $hasTarget = true;
             }
+        }
+        if (!$hasTarget) {
+            return false;
         }
 
         return true;

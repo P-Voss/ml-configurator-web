@@ -2,6 +2,8 @@
 
 namespace App\State\Modeltype;
 
+use App\CodeGenerator\AbstractCodegenerator;
+use App\CodeGenerator\Rnn;
 use App\Entity\Layer;
 use App\Enum\LayerTypes;
 
@@ -106,5 +108,11 @@ class RnnState extends AbstractState
 
         return true;
     }
+
+    public function getCodegenerator(): AbstractCodegenerator
+    {
+        return new Rnn($this->model);
+    }
+
 
 }

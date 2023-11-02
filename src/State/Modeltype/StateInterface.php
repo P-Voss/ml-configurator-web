@@ -2,6 +2,7 @@
 
 namespace App\State\Modeltype;
 
+use App\CodeGenerator\AbstractCodegenerator;
 use App\Entity\DecisiontreeConfiguration;
 use App\Entity\Layer;
 use App\Entity\LinRegConfiguration;
@@ -15,6 +16,7 @@ interface StateInterface extends \JsonSerializable, \SplSubject
 
     public function setModeltype(ModelTypes $type): StateInterface;
 
+    public function getCodegenerator(): AbstractCodegenerator;
 
     public function getArchitectureType(): string;
 

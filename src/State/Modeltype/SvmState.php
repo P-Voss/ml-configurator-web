@@ -2,6 +2,8 @@
 
 namespace App\State\Modeltype;
 
+use App\CodeGenerator\AbstractCodegenerator;
+use App\CodeGenerator\Svm;
 use App\Entity\SvmConfiguration;
 
 class SvmState extends AbstractState
@@ -97,5 +99,11 @@ class SvmState extends AbstractState
         }
         $this->model->setSvmConfiguration($configuration);
     }
+
+    public function getCodegenerator(): AbstractCodegenerator
+    {
+        return new Svm($this->model);
+    }
+
 
 }
