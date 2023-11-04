@@ -169,7 +169,38 @@ class UploadFile implements \JsonSerializable
     {
         $features = [];
         foreach (json_decode($this->fieldConfigurations) as $fieldConfiguration) {
-            if ($fieldConfiguration->isTarget) {
+            if ($fieldConfiguration->isTarget or $fieldConfiguration->ignore) {
+                continue;
+            }
+            $features[] = $fieldConfiguration->name;
+        }
+        return $features;
+    }
+
+    public function getTextFeatures()
+    {
+        $features = [];
+        foreach (json_decode($this->fieldConfigurations) as $fieldConfiguration) {
+            if ($fieldConfiguration->isTarget or $fieldConfiguration->ignore) {
+                continue;
+            }
+            if ($fieldConfiguration->datatype !== "text") {
+                continue;
+            }
+            $features[] = $fieldConfiguration->name;
+        }
+        return $features;
+    }
+
+
+    public function getNumericalFeatures()
+    {
+        $features = [];
+        foreach (json_decode($this->fieldConfigurations) as $fieldConfiguration) {
+            if ($fieldConfiguration->isTarget or $fieldConfiguration->ignore) {
+                continue;
+            }
+            if ($fieldConfiguration->datatype === "text") {
                 continue;
             }
             $features[] = $fieldConfiguration->name;

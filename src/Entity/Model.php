@@ -67,10 +67,14 @@ class Model implements \JsonSerializable
     #[ORM\Column(nullable: true)]
     private ?array $hyperparameters = null;
 
+    #[ORM\OneToMany(mappedBy: 'model', targetEntity: TrainingTask::class, orphanRemoval: true)]
+    private Collection $trainingTasks;
+
     public function __construct()
     {
         $this->layers = new ArrayCollection();
         $this->events = new ArrayCollection();
+        $this->trainingTasks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -361,6 +365,36 @@ class Model implements \JsonSerializable
             'hyperparameters' => $this->hyperparameters,
             'uploadFile' => $this->uploadFile,
         ];
+    }
+
+    /**
+     * @return Collection<int, TrainingTask>
+     */
+    public function getTrainingTasks(): Collection
+    {
+        return $this->trainingTasks;
+    }
+
+    public function addTrainingTask(TrainingTask $trainingTask): static
+    {
+        if (!$this->trainingTasks->contains($trainingTask)) {
+            $this->trainingTasks->add($trainingTask);
+            $trainingTask->setModel($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTrainingTask(TrainingTask $trainingTask): static
+    {
+        if ($this->trainingTasks->removeElement($trainingTask)) {
+            // set the owning side to null (unless already changed)
+            if ($trainingTask->getModel() === $this) {
+                $trainingTask->setModel(null);
+            }
+        }
+
+        return $this;
     }
 
 
