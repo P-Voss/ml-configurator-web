@@ -4,10 +4,20 @@
 
 {% block javascripts %}
     {{ encore_entry_script_tags('trainer') }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.1/highlight.min.js"></script>
+    <script>
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     hljs.initHighlightingOnLoad();
+        // });
+    </script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/default.min.css">
 {% endblock %}
 
 {% block body %}
-
     <div id="app">
         <Trainer
             model-id="{{ modelId }}"
@@ -20,6 +30,9 @@
             unignore-field-url="{{ path('app_trainer_data_unignore') }}"
             save-hyperparameter-url="{{ path('app_trainer_hyperparameter_save') }}"
             submit-task-url="{{ path('app_trainer_training_submit') }}"
+            execute-task-url="{{ path('app_trainer_training_execute') }}"
+            load-tasks-url="{{ path('app_trainer_training_load') }}"
+            load-example-url="{{ path('app_trainer_training_example') }}"
         ></Trainer>
     </div>
 

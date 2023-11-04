@@ -105,7 +105,11 @@
                     aria-labelledby="trainer-training"
                 >
                     <Training
-                        @submit-training-task="submitTrainingTask"
+                        :model="this.model"
+                        :load-tasks-url="this.loadTasksUrl"
+                        :submit-task-url="this.submitTaskUrl"
+                        :execute-task-url="this.executeTaskUrl"
+                        :load-example-url="this.loadExampleUrl"
                     />
                 </div>
             </div>
@@ -118,7 +122,6 @@
 import TrainerNavigation from "./Navigation.vue"
 import {loadModel} from "../../configurator/services/ModelService.js"
 import DataService from "../services/DataService.js"
-import TrainingService from "../services/TrainingService.js";
 
 import FieldList from "./DataStep/FieldList.vue";
 import LogRegParameters from "./HyperparameterStep/LogRegParameters.vue";
@@ -154,6 +157,9 @@ export default {
         updateFieldUrl: String,
         saveHyperparameterUrl: String,
         submitTaskUrl: String,
+        executeTaskUrl: String,
+        loadTasksUrl: String,
+        loadExampleUrl: String,
     },
     data() {
         return {
@@ -283,12 +289,6 @@ export default {
             let response = await DataService.saveHyperparameter(this.saveHyperparameterUrl, form)
             console.log(response)
             this.loadModel(this.model.id)
-        },
-        async submitTrainingTask() {
-            const form = new FormData()
-            form.set('id', this.model.id)
-            let response = await TrainingService.submitTrainingTask(this.submitTaskUrl, form)
-            console.log(response)
         }
     }
 };
