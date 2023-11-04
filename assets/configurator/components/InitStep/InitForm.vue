@@ -151,8 +151,12 @@
             </div>
         </div>
 
-        <div class="col-12 justify-content-end" v-if="formCompleted">
+        <div class="col-12 col-lg-1" v-if="formCompleted">
             <button class="btn btn-primary" @click="initializeModel">{{$t("button.save")}}</button>
+        </div>
+
+        <div class="col-12 col-lg-6 text-muted" v-if="formCompleted">
+            {{$t('helptext.initModelchangeHint')}}
         </div>
     </div>
 </template>

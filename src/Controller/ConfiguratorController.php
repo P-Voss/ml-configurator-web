@@ -86,20 +86,8 @@ class ConfiguratorController extends AbstractController
                 'message' => $exception->getMessage(),
             ]);
         }
-        try {
-            $modeltype = ModelTypes::from($request->get('modeltype'));
-        } catch (\ValueError $error) {
-            throw new \Exception("invalid modeltype");
-        }
-
         $state->setName($request->get('name', 'My Model'));
         $state->setDescription($request->get('description', ''));
-        $state->setModeltype($modeltype);
-
-        $model->setName($request->get('name', 'My Model'))
-            ->setUpdatedate(new \DateTime())
-            ->setDescription($request->get('description', ''))
-            ->setType($modeltype->value);
 
         $this->entityManager->flush();
 

@@ -103,6 +103,8 @@ export default {
             logregSolverSAG: "Stochastic Average Gradient Descent ist eine Variante des Gradientenabstiegs, die für große Datensätze geeignet ist. Sie arbeitet schneller als normale Gradientenabstiegsverfahren, indem sie den Durchschnitt der Gradienten über mehrere zufällige Batches berechnet.",
             logregSolverSAGA: "Eine Verbesserung des SAG-Verfahrens, das eine zusätzliche Korrektur für die Richtung des Gradienten einführt, um die Konvergenzgeschwindigkeit zu erhöhen. Es ist gut für konvexe Probleme und hat eine schnelle Konvergenz.",
             logregLambda: "Lambda ist ein Hyperparameter, der nur für Modelle mit Regularisierung relevant ist. Er kontrolliert die Stärke der Regularisierung. Ein höherer Wert von Lambda kann dazu führen, dass die Koeffizienten näher oder gleich Null werden, was zu einer stärkeren Regularisierung führt.",
+
+            initModelchangeHint: "Modeltype can not be changed later on.",
         },
         headline: {
             tasktype: "Tasktype",
@@ -259,6 +261,8 @@ export default {
             logregSolverSAG: "Stochastic Average Gradient Descent ist eine Variante des Gradientenabstiegs, die für große Datensätze geeignet ist. Sie arbeitet schneller als normale Gradientenabstiegsverfahren, indem sie den Durchschnitt der Gradienten über mehrere zufällige Batches berechnet.",
             logregSolverSAGA: "Eine Verbesserung des SAG-Verfahrens, das eine zusätzliche Korrektur für die Richtung des Gradienten einführt, um die Konvergenzgeschwindigkeit zu erhöhen. Es ist gut für konvexe Probleme und hat eine schnelle Konvergenz.",
             logregLambda: "Lambda ist ein Hyperparameter, der nur für Modelle mit Regularisierung relevant ist. Er kontrolliert die Stärke der Regularisierung. Ein höherer Wert von Lambda kann dazu führen, dass die Koeffizienten näher oder gleich Null werden, was zu einer stärkeren Regularisierung führt.",
+
+            initModelchangeHint: "Der Modelltyp kann nicht nachträglich geändert werden.",
         },
         headline: {
             tasktype: "Aufgabentyp",
