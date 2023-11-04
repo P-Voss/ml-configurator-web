@@ -5,6 +5,7 @@
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     app.supported_locales: 'en|de'
+    app.pythonpath: '%env(PYTHON_PATH)%'
 
 services:
     # default configuration for services in *this* file
@@ -18,12 +19,27 @@ services:
 #            $execXmlDir: '%kernel.project_dir%/data/execute/xml/'
 #            $execPythonDir: '%kernel.project_dir%/data/execute/python/'
 #            $trainingXmlDir: '%kernel.project_dir%/data/training/xml/'
+
+            # directory containing the generated python scripts
             $trainingPythonDir: '%kernel.project_dir%/data/training/python/'
+
+            # upload directory for training data
             $trainingCsvDir: '%kernel.project_dir%/data/training/csv/'
-            $checkpointDir: '%kernel.project_dir%/data/training/python/'
-            $modelDir: '%kernel.project_dir%/data/training/python/'
-            $scalerDir: '%kernel.project_dir%/data/training/python/'
-            $errorDir: '%kernel.project_dir%/data/training/python/'
+
+            # directory for training reports
+            $trainingReportDir: '%kernel.project_dir%/data/training/reports/'
+
+            # directory for model checkpoints
+            $checkpointDir: '%kernel.project_dir%/data/checkpoint/'
+
+            # directory for trained models
+            $modelDir: '%kernel.project_dir%/data/models/'
+
+            # directory for trained scalers
+            $scalerDir: '%kernel.project_dir%/data/scaler/'
+
+            # directory for errorlogs during training or execution
+            $errorDir: '%kernel.project_dir%/data/errors/'
 
 
     # makes classes in src/ available to be used as services
