@@ -10,6 +10,7 @@ use App\Entity\LinRegConfiguration;
 use App\Entity\LogRegConfiguration;
 use App\Entity\Model;
 use App\Entity\SvmConfiguration;
+use App\Entity\TrainingTask;
 use App\Enum\ModelTypes;
 use App\Event\SubjectTrait;
 use Doctrine\ORM\EntityManagerInterface;
@@ -39,6 +40,18 @@ abstract class AbstractState implements StateInterface
     public function getCodegenerator(): AbstractCodegenerator
     {
         return new Feedforward($this->model);
+    }
+
+    /**
+     * @return int
+     * @todo default implementation until specific implementations are completed
+     */
+    public function getBestTrainingId(): int
+    {
+        if ($this->model->getTrainingTasks()->count() === 0) {
+            return 0;
+        }
+        return $this->model->getTrainingTasks()->last()->getId();
     }
 
     /**
@@ -94,6 +107,7 @@ abstract class AbstractState implements StateInterface
 
     /**
      * @throws Exception
+     * @todo it is no longer to change modeltype after initialization, can remove some of the code
      */
     public function setModeltype(ModelTypes $type): StateInterface
     {
@@ -183,6 +197,12 @@ abstract class AbstractState implements StateInterface
         }
 
         return true;
+    }
+
+    public function addTrainingTask(TrainingTask $task)
+    {
+        $this->model->addTrainingTask($task)
+            ->setUpdatedate(new \DateTime());
     }
 
     public function jsonSerialize(): array

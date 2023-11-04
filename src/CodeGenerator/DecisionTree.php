@@ -2,12 +2,13 @@
 
 namespace App\CodeGenerator;
 
-use App\CodeGenerator\AbstractCodegenerator;
+use App\Service\TrainingPathGenerator;
 
 class DecisionTree extends AbstractCodegenerator
 {
 
-    public function generateTrainingScript(string $dataPath): string
+
+    public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
         // TODO: Implement generate() method.
     }

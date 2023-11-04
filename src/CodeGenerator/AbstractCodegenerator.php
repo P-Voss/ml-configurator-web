@@ -3,7 +3,7 @@
 namespace App\CodeGenerator;
 
 use App\Entity\Model;
-use App\State\Modeltype\AbstractState;
+use App\Service\TrainingPathGenerator;
 
 abstract class AbstractCodegenerator
 {
@@ -15,7 +15,17 @@ abstract class AbstractCodegenerator
         $this->model = $model;
     }
 
-    abstract public function generateTrainingScript(string $dataPath): string;
+
+    abstract public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string;
+
+    /**
+     * @return string
+     * @todo only for dev purposes, making function abstract when implementing in child classes
+     */
+    public function getExampleScript(): string
+    {
+        return "";
+    }
 
     /**
      * @throws \Exception

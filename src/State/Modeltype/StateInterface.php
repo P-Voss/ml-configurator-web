@@ -9,6 +9,7 @@ use App\Entity\LinRegConfiguration;
 use App\Entity\LogRegConfiguration;
 use App\Entity\Model;
 use App\Entity\SvmConfiguration;
+use App\Entity\TrainingTask;
 use App\Enum\ModelTypes;
 
 interface StateInterface extends \JsonSerializable, \SplSubject
@@ -19,6 +20,8 @@ interface StateInterface extends \JsonSerializable, \SplSubject
     public function getCodegenerator(): AbstractCodegenerator;
 
     public function getArchitectureType(): string;
+
+    public function getBestTrainingId(): int;
 
 
     public function setName(string $name);
@@ -47,5 +50,7 @@ interface StateInterface extends \JsonSerializable, \SplSubject
     public function validArchitecture(): bool;
 
     public function validFieldConfiguration(): bool;
+
+    public function addTrainingTask(TrainingTask $task);
 
 }

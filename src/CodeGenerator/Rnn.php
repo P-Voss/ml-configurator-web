@@ -2,9 +2,9 @@
 
 namespace App\CodeGenerator;
 
-use App\CodeGenerator\AbstractCodegenerator;
 use App\Entity\Layer;
 use App\Enum\LayerTypes;
+use App\Service\TrainingPathGenerator;
 
 class Rnn extends AbstractCodegenerator
 {
@@ -14,7 +14,8 @@ class Rnn extends AbstractCodegenerator
      * @todo does not execute properly, needs bugfixing
      * @todo requires more extensive configuration to define dimensions of sequence?
      */
-    public function generateTrainingScript(string $dataPath): string
+
+    public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
         $uploadFile = $this->model->getUploadFile();
         $targetName = $uploadFile->getTargetName();

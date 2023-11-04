@@ -4,6 +4,7 @@ namespace App\CodeGenerator;
 
 use App\Entity\Layer;
 use App\Enum\LayerTypes;
+use App\Service\TrainingPathGenerator;
 
 class Feedforward extends AbstractCodegenerator
 {
@@ -11,7 +12,8 @@ class Feedforward extends AbstractCodegenerator
     /**
      * @throws \Exception
      */
-    public function generateTrainingScript(string $dataPath): string
+
+    public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
         $uploadFile = $this->model->getUploadFile();
         $targetName = $uploadFile->getTargetName();
@@ -34,6 +36,7 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = "from tensorflow.keras.models import Sequential";
         $lines[] = "from tensorflow.keras.layers import Dense, Dropout";
         $lines[] = "from tensorflow.keras.callbacks import ModelCheckpoint";
+        $lines[] = "from tensorflow.keras.callbacks import CSVLogger";
         $lines[] = "from sklearn.preprocessing import StandardScaler";
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from tensorflow.keras.callbacks import EarlyStopping";
@@ -44,6 +47,11 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = '';
         $lines[] = 'try:';
 
+        $innerLines[] = '# initialisiert Logger für Trainingsfortschritt';
+        $innerLines[] = sprintf(
+            'csv_logger = CSVLogger("%s", append=True)',
+            $logFile,
+        );
         $innerLines = [];
         $innerLines[] = "model = Sequential()";
 
@@ -112,10 +120,10 @@ class Feedforward extends AbstractCodegenerator
 
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            "history = model.fit(features_train, target_train, validation_data = (features_test, target_test), epochs = %s, batch_size = %s, verbose = 1, callbacks = [%s])",
+            "history = model.fit(features_train, target_train, validation_data = (features_test, target_test), epochs = %s, batch_size = %s, verbose = 1, callbacks = [csv_logger %s])",
             $hyperparameter['epochs'],
             $hyperparameter['batchSize'],
-            $hyperparameter['patience'] > 0 ? 'early_stop' : '',
+            $hyperparameter['patience'] > 0 ? ', early_stop' : '',
         );
 
         $innerLines[] = '';

@@ -5,6 +5,7 @@ namespace App\State\Modeltype;
 use App\CodeGenerator\AbstractCodegenerator;
 use App\CodeGenerator\Svm;
 use App\Entity\SvmConfiguration;
+use App\Entity\TrainingTask;
 
 class SvmState extends AbstractState
 {
@@ -105,5 +106,25 @@ class SvmState extends AbstractState
         return new Svm($this->model);
     }
 
+    public function getBestTrainingId(): int
+    {
+        if ($this->model->getTrainingTasks()->count() === 0) {
+            return 0;
+        }
+        $bestId = 0;
+        $lowestScore = PHP_INT_MAX;
+        foreach ($this->model->getTrainingTasks() as $task) {
+            if ($task->getState() !== TrainingTask::STATE_COMPLETED || !$task->getReportPath()) {
+                continue;
+            }
+            $report = json_decode(file_get_contents($task->getReportPath()));
+            if ($report->mse < $lowestScore) {
+                $lowestScore = $report->mse;
+                $bestId = $task->getId();
+            }
+        }
+
+        return $bestId;
+    }
 
 }
