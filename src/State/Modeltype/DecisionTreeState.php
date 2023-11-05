@@ -2,8 +2,10 @@
 
 namespace App\State\Modeltype;
 
+use App\CodeGenerator\AbstractCodegenerator;
+use App\CodeGenerator\DecisionTree;
 use App\Entity\DecisiontreeConfiguration;
-use App\Enum\ModelTypes;
+use App\Entity\TrainingTask;
 
 class DecisionTreeState extends AbstractState
 {
@@ -106,8 +108,42 @@ class DecisionTreeState extends AbstractState
         if (!in_array($configuration->getQualityMeasure(), ['gini', 'entropy'])) {
             throw new \Exception("invalid argument: quality measure");
         }
+        $currentConfiguration = $this->model->getDecisiontreeConfiguration();
+        if ($currentConfiguration) {
+            $this->entityManager->remove($currentConfiguration);
+            $this->entityManager->flush();
+        }
+        $this->model->setDecisiontreeConfiguration($configuration)
+            ->setUpdatedate(new \DateTime());
+    }
 
-        $this->model->setDecisiontreeConfiguration($configuration);
+    public function getCodegenerator(): AbstractCodegenerator
+    {
+        return new DecisionTree($this->model);
+    }
+
+    public function getBestTrainingId(): int
+    {
+        if ($this->model->getTrainingTasks()->count() === 0) {
+            return 0;
+        }
+        $bestId = 0;
+        $highestAccuracy = 0;
+        foreach ($this->model->getTrainingTasks() as $task) {
+            if ($task->getState() !== TrainingTask::STATE_COMPLETED || !$task->getReportPath()) {
+                continue;
+            }
+            if (!file_exists($task->getReportPath())) {
+                continue;
+            }
+            $report = json_decode(file_get_contents($task->getReportPath()));
+            if ($report->accuracy > $highestAccuracy) {
+                $highestAccuracy = $report->accuracy;
+                $bestId = $task->getId();
+            }
+        }
+
+        return $bestId;
     }
 
 }

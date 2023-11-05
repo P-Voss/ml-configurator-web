@@ -8,6 +8,12 @@ use App\Service\TrainingPathGenerator;
 class Svm extends AbstractCodegenerator
 {
 
+    /**
+     * @param TrainingPathGenerator $pathGenerator
+     * @return string
+     * @throws \Exception
+     * @todo datasplit does not use testset
+     */
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
         $uploadFile = $this->model->getUploadFile();
@@ -21,6 +27,8 @@ class Svm extends AbstractCodegenerator
 
         $hyperparameter = $this->model->getHyperparameters();
         $split = $hyperparameter['testPercentage'] / ($hyperparameter['testPercentage'] + $hyperparameter['validationPercentage']);
+
+        $innerLines = [];
 
         $lines = [];
         $lines[] = '# deaktiviert Info-Meldungen von Tensorflow';
@@ -45,13 +53,14 @@ class Svm extends AbstractCodegenerator
             'logging.basicConfig(filename="%s", level=logging.ERROR)',
             $pathGenerator->getErrorFile()
         );
-        $lines[] = '';
 
+        $lines[] = '';
         $lines[] = 'def plot_to_base64():';
         $lines[] = '    img = BytesIO()';
         $lines[] = '    plt.savefig(img, format="png")';
         $lines[] = '    img.seek(0)';
         $lines[] = '    return base64.b64encode(img.read()).decode("utf-8")';
+        $lines[] = '';
 
         $lines[] = 'try:';
 
@@ -82,6 +91,8 @@ class Svm extends AbstractCodegenerator
                 'features_val, _, target_val, _ = train_test_split(features_temp, target_temp, test_size=%s)',
                 $split
             );
+        } else {
+            $innerLines[] = 'features_val, target_val = features_temp, target_temp';
         }
 
         $innerLines[] = '';
@@ -159,7 +170,6 @@ class Svm extends AbstractCodegenerator
         $endLines = [];
         $endLines[] = 'except Exception as e:';
         $endLines[] = '    logging.error("Exception occurred", exc_info=True)';
-        $endLines[] = '    print(f"An error occurred: {e}")';
 
         $result = implode(PHP_EOL, $lines) . PHP_EOL
             . implode(PHP_EOL, $formattedInnerLines) . PHP_EOL
