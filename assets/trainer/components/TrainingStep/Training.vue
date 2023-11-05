@@ -66,6 +66,18 @@
                             :best-training-id="bestTrainingId"
                             :load-example-url="loadExampleUrl"
                         />
+                        <FeedforwardResult
+                            v-if="this.model.type === 'MODEL_TYPE_NEUR'"
+                            :data="activeTask.data"
+                            :best-training-id="bestTrainingId"
+                            :load-example-url="loadExampleUrl"
+                        />
+                        <DecisionTreeResult
+                            v-if="this.model.type === 'MODEL_TYPE_DTREE'"
+                            :data="activeTask.data"
+                            :best-training-id="bestTrainingId"
+                            :load-example-url="loadExampleUrl"
+                        />
                     </div>
                 </div>
             </div>
@@ -123,10 +135,12 @@
 
 import TrainingService from "../../services/TrainingService.js";
 import SvmResult from "./Result/SvmResult.vue";
+import FeedforwardResult from "./Result/FeedforwardResult.vue";
+import DecisionTreeResult from "./Result/DecisionTreeResult.vue";
 
 export default {
     name: "Training",
-    components: {SvmResult},
+    components: {DecisionTreeResult, FeedforwardResult, SvmResult},
     props: {
         model: Object,
         submitTaskUrl: String,
