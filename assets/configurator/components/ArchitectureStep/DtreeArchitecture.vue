@@ -52,7 +52,6 @@
                 <label for="missingValueHandling" class="form-label">{{$t("label.dtreeMissingValues")}}</label>
                 <div class="input-group">
                     <select class="form-select" id="missingValueHandling" v-model="params.missingValueHandling">
-                        <option value="mean">{{$t("option.dtreeGini")}}</option>
                         <option value="median">{{$t("option.dtreeMedian")}}</option>
                         <option value="drop">{{$t("option.dtreeDrop")}}</option>
                     </select>
