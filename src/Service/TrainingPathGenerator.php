@@ -54,37 +54,37 @@ class TrainingPathGenerator
 
     public function getCheckpointFile(string $extension): string
     {
-        return $this->getFilepath($this->checkpointDir, 'checkpoint', '.' . $extension);
+        return $this->getFilepath($this->checkpointDir, 'checkpoint', $extension);
     }
 
     public function getModelFile(string $extension): string
     {
-        return $this->getFilepath($this->modelDir, 'model', '.' . $extension);
+        return $this->getFilepath($this->modelDir, 'model', $extension);
     }
 
     public function getScalerFile(string $extension): string
     {
-        return $this->getFilepath($this->scalerDir, 'scaler', '.' . $extension);
+        return $this->getFilepath($this->scalerDir, 'scaler', $extension);
     }
 
     public function getPythonFile(): string
     {
-        return $this->getFilepath($this->trainingPythonDir, 'script', '.py');
+        return $this->getFilepath($this->trainingPythonDir, 'script', 'py');
     }
 
     public function getLogFile(): string
     {
-        return $this->getFilepath($this->trainingReportDir, 'log', '.log');
+        return $this->getFilepath($this->trainingReportDir, 'log', 'log');
     }
 
     public function getReportFile(): string
     {
-        return $this->getFilepath($this->trainingReportDir, 'report', '.json');
+        return $this->getFilepath($this->trainingReportDir, 'report', 'json');
     }
 
     public function getErrorFile(): string
     {
-        return $this->getFilepath($this->errorDir, 'error', '.log');
+        return $this->getFilepath($this->errorDir, 'error', 'log');
     }
 
 

@@ -98,7 +98,8 @@ class SvmState extends AbstractState
             $this->entityManager->remove($currentConfiguration);
             $this->entityManager->flush();
         }
-        $this->model->setSvmConfiguration($configuration);
+        $this->model->setSvmConfiguration($configuration)
+            ->setUpdatedate(new \DateTime());
     }
 
     public function getCodegenerator(): AbstractCodegenerator
@@ -115,6 +116,9 @@ class SvmState extends AbstractState
         $lowestScore = PHP_INT_MAX;
         foreach ($this->model->getTrainingTasks() as $task) {
             if ($task->getState() !== TrainingTask::STATE_COMPLETED || !$task->getReportPath()) {
+                continue;
+            }
+            if (!file_exists($task->getReportPath())) {
                 continue;
             }
             $report = json_decode(file_get_contents($task->getReportPath()));

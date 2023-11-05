@@ -191,8 +191,12 @@ class TrainingTask implements \JsonSerializable
             $creationDatetime = $this->creationDatetime->format('Y-m-d H:i:s');
         }
         $result = [];
-        if ($this->reportPath) {
+        if ($this->reportPath && file_exists($this->reportPath)) {
             $result = json_decode(file_get_contents($this->reportPath));
+        }
+        $log = [];
+        if ($this->logPath && file_exists($this->logPath)) {
+            $log = file_get_contents($this->logPath);
         }
 
         return [
@@ -202,7 +206,8 @@ class TrainingTask implements \JsonSerializable
             'creationDatetime' => $creationDatetime,
             'startDatetime' => $startDatetime,
             'endDatetime' => $endDatetime,
-            'result' => $result
+            'result' => $result,
+            'log' => $log,
         ];
     }
 

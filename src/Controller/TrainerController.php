@@ -461,6 +461,9 @@ class TrainerController extends AbstractController
                 $completedTasks[] = $task;
             }
         }
+        usort($completedTasks, function (TrainingTask $t1, TrainingTask $t2) {
+            return $t1->getId() > $t2->getId();
+        });
 
         return new JsonResponse([
             'success' => true,
