@@ -3,9 +3,11 @@
 namespace App\State\Modeltype;
 
 
+use App\CodeGenerator\AbstractCodegenerator;
+use App\CodeGenerator\Feedforward;
 use App\Entity\Layer;
+use App\Entity\TrainingTask;
 use App\Enum\LayerTypes;
-use App\Enum\ModelTypes;
 
 class NeuralNetState extends AbstractState
 {
@@ -108,5 +110,33 @@ class NeuralNetState extends AbstractState
         return true;
     }
 
+    public function getBestTrainingId(): int
+    {
+        if ($this->model->getTrainingTasks()->count() === 0) {
+            return 0;
+        }
+        $bestId = 0;
+        $lowestScore = PHP_INT_MAX;
+        foreach ($this->model->getTrainingTasks() as $task) {
+            if ($task->getState() !== TrainingTask::STATE_COMPLETED || !$task->getReportPath()) {
+                continue;
+            }
+            if (!file_exists($task->getReportPath())) {
+                continue;
+            }
+            $report = json_decode(file_get_contents($task->getReportPath()));
+            if ($report->loss < $lowestScore) {
+                $lowestScore = $report->loss;
+                $bestId = $task->getId();
+            }
+        }
+
+        return $bestId;
+    }
+
+    public function getCodegenerator(): AbstractCodegenerator
+    {
+        return new Feedforward($this->model);
+    }
 
 }
