@@ -202,7 +202,6 @@ class Feedforward extends AbstractCodegenerator
         $innerLines[] = '    "best_val_loss": min(history.history["val_loss"]) if early_stop.stopped_epoch else history.history["val_loss"][-1],';
         $innerLines[] = '    "scatterplot": plot_predictions_vs_actuals(features_test, target_test, predictions),';
         $innerLines[] = '    "learning_curves": plot_learning_curves(history),';
-//        $innerLines[] = '    "feature_importance": feature_importance_dict,';
         $innerLines[] = '    "duration": end_time - start_time';
         $innerLines[] = '}';
         $innerLines[] = sprintf('with open("%s", "w") as outfile:', $pathGenerator->getReportFile());

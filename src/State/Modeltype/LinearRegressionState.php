@@ -2,6 +2,8 @@
 
 namespace App\State\Modeltype;
 
+use App\CodeGenerator\AbstractCodegenerator;
+use App\CodeGenerator\LinearRegression;
 use App\Entity\LinRegConfiguration;
 
 class LinearRegressionState extends AbstractState
@@ -107,6 +109,17 @@ class LinearRegressionState extends AbstractState
         }
 
         return true;
+    }
+
+    public function getCodegenerator(): AbstractCodegenerator
+    {
+        return new LinearRegression($this->model);
+    }
+
+
+    public function getBestTrainingId(): int
+    {
+        return parent::getBestTrainingId();
     }
 
 }
