@@ -105,7 +105,7 @@ export default {
                 minSampleSplit: 2,
                 maxFeatures: 1,
                 minSamplesLeaf: 1,
-                missingValueHandling: 'mean',
+                missingValueHandling: 'median',
                 qualityMeasure: 'gini'
             },
             showingInfo: null
