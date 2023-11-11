@@ -17,34 +17,34 @@
                     role="tabpanel"
                     aria-labelledby="trainer-data-prep"
                 >
-                    <div class="row">
-                        <div class="col-12 col-lg-6">
-                            <h3>Testdaten hochladen</h3>
-                            <form @submit.prevent="uploadData">
-                                <div class="mb-3">
-                                    <label for="dataFile" class="form-label">Wählen Sie Ihre Datei aus:</label>
-                                    <input type="file" class="form-control" id="dataFile" @change="setFile" ref="file" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Upload</button>
-                            </form>
-                        </div>
-                        <div class="col-12 col-lg-6" v-if="uploadComplete">
-                            <h3>Datei Informationen</h3>
-                            <div>
-                                <span class="fw-bold">Dateiname: </span> {{filedata.filename}}
-                            </div>
-                            <div>
-                                <span class="fw-bold">Zeitpunkt Upload: </span> {{filedata.uploadDate}}
-                            </div>
-                            <div>
-                                <span class="fw-bold">Anzahl Einträge: </span> {{filedata.entryCount}}
-                            </div>
-                        </div>
-                    </div>
+<!--                    <div class="row">-->
+<!--                        <div class="col-12 col-lg-6">-->
+<!--                            <h3>Testdaten hochladen</h3>-->
+<!--                            <form @submit.prevent="uploadData">-->
+<!--                                <div class="mb-3">-->
+<!--                                    <label for="dataFile" class="form-label">Wählen Sie Ihre Datei aus:</label>-->
+<!--                                    <input type="file" class="form-control" id="dataFile" @change="setFile" ref="file" required>-->
+<!--                                </div>-->
+<!--                                <button type="submit" class="btn btn-primary">Upload</button>-->
+<!--                            </form>-->
+<!--                        </div>-->
+<!--                        <div class="col-12 col-lg-6" v-if="uploadComplete">-->
+<!--                            <h3>Datei Informationen</h3>-->
+<!--                            <div>-->
+<!--                                <span class="fw-bold">Dateiname: </span> {{filedata.filename}}-->
+<!--                            </div>-->
+<!--                            <div>-->
+<!--                                <span class="fw-bold">Zeitpunkt Upload: </span> {{filedata.uploadDate}}-->
+<!--                            </div>-->
+<!--                            <div>-->
+<!--                                <span class="fw-bold">Anzahl Einträge: </span> {{filedata.entryCount}}-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
 
 
-                    <div v-if="uploadComplete && fieldConfigurations && fieldConfigurations.length > 0">
-                        <h4>Datei-Details</h4>
+                    <div>
+                        <h4>Trainingsdaten</h4>
 
                         <FieldList
                             @toggle-target="toggleTarget"
@@ -211,14 +211,15 @@ export default {
                         this.model.architectureType = data.model.architectureType
                         this.model.validFieldConfiguration = data.model.validFieldConfiguration
 
-                        if (data.model.uploadFile) {
-                            this.fieldConfigurations = data.model.uploadFile.fieldConfigurations
-                            this.uploadComplete = true
+                        this.fieldConfigurations = data.model.fieldConfigurations
 
-                            this.filedata.filename = data.model.uploadFile.filename
-                            this.filedata.uploadDate = data.model.uploadFile.uploadDate
-                            this.filedata.entryCount = data.model.uploadFile.entryCount
-                        }
+                        // if (data.model.uploadFile) {
+                        //     this.uploadComplete = true
+                        //
+                        //     this.filedata.filename = data.model.uploadFile.filename
+                        //     this.filedata.uploadDate = data.model.uploadFile.uploadDate
+                        //     this.filedata.entryCount = data.model.uploadFile.entryCount
+                        // }
                         if (data.model.hyperparameters) {
                             this.model.hyperparameters = data.model.hyperparameters
                             this.model.validHyperparameterConfiguration = true
@@ -260,24 +261,34 @@ export default {
         async toggleTarget(params) {
             let form = new FormData()
             form.set('id', this.model.id)
-            form.set('fieldname', params.fieldname)
+            form.set('fieldId', params.fieldId)
             if (params.markTarget) {
-                await DataService.toggleFieldState(this.markTargetUrl, form)
+                let response = await DataService.toggleFieldState(this.markTargetUrl, form)
+                if (response.data.success) {
+                    this.fieldConfigurations = response.data.fieldConfigurations
+                }
             } else {
-                await DataService.toggleFieldState(this.removeTargetUrl, form)
+                let response = await DataService.toggleFieldState(this.removeTargetUrl, form)
+                if (response.data.success) {
+                    this.fieldConfigurations = response.data.fieldConfigurations
+                }
             }
-            this.loadModel(this.model.id)
         },
         async toggleIgnore(params) {
             let form = new FormData()
             form.set('id', this.model.id)
-            form.set('fieldname', params.fieldname)
+            form.set('fieldId', params.fieldId)
             if (params.setIgnore) {
-                await DataService.toggleFieldState(this.ignoreFieldUrl, form)
+                let response = await DataService.toggleFieldState(this.ignoreFieldUrl, form)
+                if (response.data.success) {
+                    this.fieldConfigurations = response.data.fieldConfigurations
+                }
             } else {
-                await DataService.toggleFieldState(this.unignoreFieldUrl, form)
+                let response = await DataService.toggleFieldState(this.unignoreFieldUrl, form)
+                if (response.data.success) {
+                    this.fieldConfigurations = response.data.fieldConfigurations
+                }
             }
-            this.loadModel(this.model.id)
         },
         async saveConfiguration(form) {
             form.set('id', this.model.id)

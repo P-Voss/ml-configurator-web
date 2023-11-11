@@ -10,6 +10,7 @@ export default {
         label: {
             name: "Name",
             description: "Description",
+            dataset: "Dataset",
             neuralnetIntro: "Die Architektur eines neuronalen Netzes ist ein entscheidender Faktor für dessen Leistung und Anpassungsfähigkeit. Jede Schicht des Netzes hat einen speziellen Zweck und kann dazu beitragen, unterschiedliche Aspekte deiner Daten zu modellieren. Hier wirst du die Möglichkeit haben, deine eigene Netzwerkarchitektur Schicht für Schicht aufzubauen.",
             dropoutIntro: "Manchmal wird Dropout als Parameter in anderen Layern verwendet und manchmal als eigenständiger Layer. Der Unterschied liegt hauptsächlich in der Implementierung und Flexibilität. Durch das Hinzufügen eines eigenen Dropout-Layers können Sie den Dropout gezielt auf bestimmte Schichten anwenden und die Architektur des Netzwerks anpassen. Ein Dropout-Parameter innerhalb eines anderen Layers bietet eine kompaktere Möglichkeit, Dropout für diesen speziellen Layer hinzuzufügen.",
 
@@ -39,6 +40,12 @@ export default {
             logregRegularization: "regularization",
         },
         option: {
+            datasetAbalone: "Age of abalone - Regression",
+            datasetIris: "type of flower - Classification",
+            datasetWine: "quality of wine - Classification / Regression",
+            datasetSeeds: "types of wheat seeds - Classification",
+            datasetWeather: "weatherdata - Classification / Regression",
+
             dtreeMean: "average",
             dtreeMedian: "median",
             dtreeDrop: "drop",
@@ -50,6 +57,17 @@ export default {
             linregRegularizationL2: "L2 regularization (Ridge)",
         },
         helptext: {
+            datasetAbalone: "Datasets containing physical measurements of abalones to predict their age. Further information under: https://archive.ics.uci.edu/dataset/1/abalone",
+            datasetAbaloneSource: "Source: Nash,Warwick, Sellers,Tracy, Talbot,Simon, Cawthorn,Andrew, and Ford,Wes. (1995). Abalone. UCI Machine Learning Repository. https://doi.org/10.24432/C55C7W.",
+            datasetWeather: "Historical weather data for the weatherstation in Arkona. Measured by the DWD and published under: https://opendata.dwd.de/.",
+            datasetWeatherSource: "",
+            datasetIris: "A dataset containing measurements of iris leaves to categorize the type of iris. Further information under: https://archive.ics.uci.edu/dataset/53/iris",
+            datasetIrisSource: "Source: Fisher,R. A.. (1988). Iris. UCI Machine Learning Repository. https://doi.org/10.24432/C56C76.",
+            datasetSeeds: "A dataset consisting measurements of different grain kernels. Further information under: https://archive.ics.uci.edu/dataset/236/seeds",
+            datasetSeedsSource: "Source: Charytanowicz,Magorzata, Niewczas,Jerzy, Kulczycki,Piotr, Kowalski,Piotr, and Lukasik,Szymon. (2012). seeds. UCI Machine Learning Repository. https://doi.org/10.24432/C5H30K.",
+            datasetWine: "Datasets of wine samples. Deducting the quality of wine via physical and chemical measurements. Further information under: https://archive.ics.uci.edu/dataset/186/wine+quality",
+            datasetWineSource: "Source: Cortez,Paulo, Cerdeira,A., Almeida,F., Matos,T., and Reis,J.. (2009). Wine Quality. UCI Machine Learning Repository. https://doi.org/10.24432/C56S3T.",
+
             denseneuron: "Bestimmt die Anzahl der Neuronen in dieser Schicht. Mehr Neuronen erlauben komplexere Modelle, können aber auch zu Overfitting führen.",
             lstmNeuron: "In LSTM-Layern bezieht sich der Begriff 'Einheiten' auf die Anzahl der LSTM-Zellen in der Schicht. Jede Einheit enthält den Mechanismus des LSTM, einschließlich der verschiedenen Gates und des internen Zellzustands. Sie können sich eine Einheit grob als ein 'erweitertes Neuron' vorstellen, das speziell für sequenzielle Daten entwickelt wurde.",
             gruNeuron: "In GRU-Layern bezieht sich der Begriff 'Einheiten' auf die Anzahl der GRU-Zellen in der Schicht. Jede Einheit enthält den Mechanismus des GRU, einschließlich der verschiedenen Gates. Sie können sich eine Einheit grob als ein 'erweitertes Neuron' vorstellen, das speziell für sequenzielle Daten entwickelt wurde.",
@@ -104,13 +122,13 @@ export default {
             logregSolverSAGA: "Eine Verbesserung des SAG-Verfahrens, das eine zusätzliche Korrektur für die Richtung des Gradienten einführt, um die Konvergenzgeschwindigkeit zu erhöhen. Es ist gut für konvexe Probleme und hat eine schnelle Konvergenz.",
             logregLambda: "Lambda ist ein Hyperparameter, der nur für Modelle mit Regularisierung relevant ist. Er kontrolliert die Stärke der Regularisierung. Ein höherer Wert von Lambda kann dazu führen, dass die Koeffizienten näher oder gleich Null werden, was zu einer stärkeren Regularisierung führt.",
 
-            initModelchangeHint: "Modeltype can not be changed later on.",
+            initModelchangeHint: "Modeltype and dataset can not be changed later on.",
         },
         headline: {
-            tasktype: "Tasktype",
-            modeltype: "Modeltype",
+            tasktype: "Choose a Tasktype",
+            modeltype: "Choose aModeltype",
             layertype: "Add a layer",
-            architecture: "Architecture",
+            architecture: "Configure the Architecture",
         },
         card: {
             classificationLabel: "Classification",
@@ -155,6 +173,7 @@ export default {
             modelselection: "Model Selection",
             architecture: "Architecture",
             training: "Training",
+            execute: "Execute",
         }
     },
     de: {
@@ -168,6 +187,7 @@ export default {
         label: {
             name: "Name",
             description: "Beschreibung",
+            dataset: "Datensatz",
             neuralnetIntro: "Die Architektur eines neuronalen Netzes ist ein entscheidender Faktor für dessen Leistung und Anpassungsfähigkeit. Jede Schicht des Netzes hat einen speziellen Zweck und kann dazu beitragen, unterschiedliche Aspekte deiner Daten zu modellieren. Hier wirst du die Möglichkeit haben, deine eigene Netzwerkarchitektur Schicht für Schicht aufzubauen.",
             dropoutIntro: "Manchmal wird Dropout als Parameter in anderen Layern verwendet und manchmal als eigenständiger Layer. Der Unterschied liegt hauptsächlich in der Implementierung und Flexibilität. Durch das Hinzufügen eines eigenen Dropout-Layers können Sie den Dropout gezielt auf bestimmte Schichten anwenden und die Architektur des Netzwerks anpassen. Ein Dropout-Parameter innerhalb eines anderen Layers bietet eine kompaktere Möglichkeit, Dropout für diesen speziellen Layer hinzuzufügen.",
 
@@ -197,6 +217,12 @@ export default {
             logregRegularization: "Regularisierungstyp",
         },
         option: {
+            datasetAbalone: "Alter von Meeresschnecken - Regression",
+            datasetIris: "Blumenarten - Klassifizierung",
+            datasetWine: "Weinqualität - Klassifizierung / Regression",
+            datasetSeeds: "Weizenarten - Klassifizierung",
+            datasetWeather: "Wetterdaten - Klassifizierung / Regression",
+
             dtreeMean: "Mittelwert",
             dtreeMedian: "Median",
             dtreeDrop: "Verwerfen",
@@ -208,6 +234,17 @@ export default {
             linregRegularizationL2: "L2-Regularisierung (Ridge)",
         },
         helptext: {
+            datasetAbalone: "Datasets containing physical measurements of abalones to predict their age. Further information under: https://archive.ics.uci.edu/dataset/1/abalone",
+            datasetAbaloneSource: "Quelle: Nash,Warwick, Sellers,Tracy, Talbot,Simon, Cawthorn,Andrew, and Ford,Wes. (1995). Abalone. UCI Machine Learning Repository. https://doi.org/10.24432/C55C7W.",
+            datasetWeather: "Historical weather data for the weatherstation in Arkona. Measured by the DWD and published under: https://opendata.dwd.de/.",
+            datasetWeatherSource: "",
+            datasetIris: "A dataset containing measurements of iris leaves to categorize the type of iris. Further information under: https://archive.ics.uci.edu/dataset/53/iris",
+            datasetIrisSource: "Quelle: Fisher,R. A.. (1988). Iris. UCI Machine Learning Repository. https://doi.org/10.24432/C56C76.",
+            datasetSeeds: "A dataset consisting measurements of different grain kernels. Further information under: https://archive.ics.uci.edu/dataset/236/seeds",
+            datasetSeedsSource: "Quelle: Charytanowicz,Magorzata, Niewczas,Jerzy, Kulczycki,Piotr, Kowalski,Piotr, and Lukasik,Szymon. (2012). seeds. UCI Machine Learning Repository. https://doi.org/10.24432/C5H30K.",
+            datasetWine: "Datasets of wine samples. Deducting the quality of wine via physical and chemical measurements. Further information under: https://archive.ics.uci.edu/dataset/186/wine+quality",
+            datasetWineSource: "Quelle: Cortez,Paulo, Cerdeira,A., Almeida,F., Matos,T., and Reis,J.. (2009). Wine Quality. UCI Machine Learning Repository. https://doi.org/10.24432/C56S3T.",
+
             denseneuron: "Bestimmt die Anzahl der Neuronen in dieser Schicht. Mehr Neuronen erlauben komplexere Modelle, können aber auch zu Overfitting führen.",
             lstmNeuron: "In LSTM-Layern bezieht sich der Begriff 'Einheiten' auf die Anzahl der LSTM-Zellen in der Schicht. Jede Einheit enthält den Mechanismus des LSTM, einschließlich der verschiedenen Gates und des internen Zellzustands. Sie können sich eine Einheit grob als ein 'erweitertes Neuron' vorstellen, das speziell für sequenzielle Daten entwickelt wurde.",
             gruNeuron: "In GRU-Layern bezieht sich der Begriff 'Einheiten' auf die Anzahl der GRU-Zellen in der Schicht. Jede Einheit enthält den Mechanismus des GRU, einschließlich der verschiedenen Gates. Sie können sich eine Einheit grob als ein 'erweitertes Neuron' vorstellen, das speziell für sequenzielle Daten entwickelt wurde.",
@@ -262,13 +299,13 @@ export default {
             logregSolverSAGA: "Eine Verbesserung des SAG-Verfahrens, das eine zusätzliche Korrektur für die Richtung des Gradienten einführt, um die Konvergenzgeschwindigkeit zu erhöhen. Es ist gut für konvexe Probleme und hat eine schnelle Konvergenz.",
             logregLambda: "Lambda ist ein Hyperparameter, der nur für Modelle mit Regularisierung relevant ist. Er kontrolliert die Stärke der Regularisierung. Ein höherer Wert von Lambda kann dazu führen, dass die Koeffizienten näher oder gleich Null werden, was zu einer stärkeren Regularisierung führt.",
 
-            initModelchangeHint: "Der Modelltyp kann nicht nachträglich geändert werden.",
+            initModelchangeHint: "Der Modelltyp und der Datensatz können nicht nachträglich geändert werden.",
         },
         headline: {
-            tasktype: "Aufgabentyp",
-            modeltype: "Modelltyp",
+            tasktype: "Aufgabentyp auswählen",
+            modeltype: "Modelltyp auswählen",
             layertype: "Add a layer",
-            architecture: "Modellarchitektur",
+            architecture: "Modellarchitektur definieren",
         },
         card: {
             classificationLabel: "Klassifizierung",
@@ -313,6 +350,7 @@ export default {
             modelselection: "Modellauswahl",
             architecture: "Architektur",
             training: "Training",
+            execute: "Anwendung",
         }
     }
 }

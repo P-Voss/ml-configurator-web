@@ -21,6 +21,7 @@
                         :existing-id="model.id"
                         :existing-name="model.name"
                         :existing-description="model.description"
+                        :existing-dataset="model.dataset"
                         :existing-type="model.type"
                         @init="saveModel"
                     />
@@ -124,6 +125,7 @@ export default {
                 id: '',
                 name: '',
                 description: '',
+                dataset: '',
                 type: '',
                 architectureType: '',
                 layers: [],
@@ -173,6 +175,7 @@ export default {
                         this.model.id = modelId
                         this.model.name = data.model.name
                         this.model.description = data.model.description
+                        this.model.dataset = data.model.dataset
                         this.model.type = data.model.type
                         this.model.architectureType = data.model.architectureType
                         this.model.layers = data.model.layers
@@ -195,6 +198,7 @@ export default {
             let form = new FormData()
             form.set('name', params.name)
             form.set('description', params.description)
+            form.set('dataset', params.dataset)
             form.set('modeltype', params.modeltype)
 
             if (params.id) {
