@@ -30,6 +30,12 @@
                     {{$t("navigation.training")}}
                 </a>
             </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link disabled"
+                   id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
+                    {{$t("navigation.execute")}}
+                </a>
+            </li>
         </ul>
 
 
@@ -55,6 +61,12 @@
                    :class="{'disabled' : !initStepCompleted}"
                    id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
                     {{$t("navigation.training")}}
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link disabled"
+                   id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
+                    {{$t("navigation.execute")}}
                 </a>
             </li>
         </ul>
