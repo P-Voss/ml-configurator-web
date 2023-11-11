@@ -70,11 +70,27 @@ class Model implements \JsonSerializable
     #[ORM\OneToMany(mappedBy: 'model', targetEntity: TrainingTask::class, orphanRemoval: true)]
     private Collection $trainingTasks;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $dataset = null;
+
+    #[ORM\OneToMany(mappedBy: 'model', targetEntity: FieldConfiguration::class, orphanRemoval: true)]
+    private Collection $fieldConfigurations;
+
+    #[ORM\Column(length: 1000, nullable: true)]
+    private ?string $modelPath = null;
+
+    #[ORM\Column(length: 1000, nullable: true)]
+    private ?string $checkpointPath = null;
+
+    #[ORM\Column(length: 1000, nullable: true)]
+    private ?string $scalerPath = null;
+
     public function __construct()
     {
         $this->layers = new ArrayCollection();
         $this->events = new ArrayCollection();
         $this->trainingTasks = new ArrayCollection();
+        $this->fieldConfigurations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -355,6 +371,8 @@ class Model implements \JsonSerializable
             'type' => $this->type,
             'name' => $this->name,
             'description' => $this->description,
+            'dataset' => $this->dataset,
+            'fieldConfigurations' => $this->fieldConfigurations->toArray(),
             'layers' => array_map(function (Layer $layer) {
                 return $layer->jsonSerialize();
             }, $this->layers->toArray()),
@@ -363,7 +381,7 @@ class Model implements \JsonSerializable
             'linRegConfiguration' => $this->linRegConfiguration,
             'svmConfiguration' => $this->svmConfiguration,
             'hyperparameters' => $this->hyperparameters,
-            'uploadFile' => $this->uploadFile,
+//            'uploadFile' => $this->uploadFile,
         ];
     }
 
@@ -393,6 +411,84 @@ class Model implements \JsonSerializable
                 $trainingTask->setModel(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDataset(): ?string
+    {
+        return $this->dataset;
+    }
+
+    public function setDataset(?string $dataset): static
+    {
+        $this->dataset = $dataset;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, FieldConfiguration>
+     */
+    public function getFieldConfigurations(): Collection
+    {
+        return $this->fieldConfigurations;
+    }
+
+    public function addFieldConfiguration(FieldConfiguration $fieldConfiguration): static
+    {
+        if (!$this->fieldConfigurations->contains($fieldConfiguration)) {
+            $this->fieldConfigurations->add($fieldConfiguration);
+            $fieldConfiguration->setModel($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFieldConfiguration(FieldConfiguration $fieldConfiguration): static
+    {
+        if ($this->fieldConfigurations->removeElement($fieldConfiguration)) {
+            // set the owning side to null (unless already changed)
+            if ($fieldConfiguration->getModel() === $this) {
+                $fieldConfiguration->setModel(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getModelPath(): ?string
+    {
+        return $this->modelPath;
+    }
+
+    public function setModelPath(?string $modelPath): static
+    {
+        $this->modelPath = $modelPath;
+
+        return $this;
+    }
+
+    public function getCheckpointPath(): ?string
+    {
+        return $this->checkpointPath;
+    }
+
+    public function setCheckpointPath(?string $checkpointPath): static
+    {
+        $this->checkpointPath = $checkpointPath;
+
+        return $this;
+    }
+
+    public function getScalerPath(): ?string
+    {
+        return $this->scalerPath;
+    }
+
+    public function setScalerPath(?string $scalerPath): static
+    {
+        $this->scalerPath = $scalerPath;
 
         return $this;
     }

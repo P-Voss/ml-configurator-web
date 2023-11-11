@@ -3,6 +3,7 @@
 namespace App\CodeGenerator;
 
 use App\Entity\Model;
+use App\Service\Dataset;
 use App\Service\TrainingPathGenerator;
 
 abstract class AbstractCodegenerator
@@ -17,6 +18,12 @@ abstract class AbstractCodegenerator
 
 
     abstract public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string;
+
+    final protected function getDataPath(TrainingPathGenerator $pathGenerator): string
+    {
+        $filename = Dataset::getFilename($this->model->getDataset());
+        return $pathGenerator->getCsvFile($filename);
+    }
 
     /**
      * @return string
@@ -70,6 +77,59 @@ abstract class AbstractCodegenerator
             'MAE' => 'mean_absolute_error',
             default => throw new \Exception("invalid input for loss function"),
         };
+    }
+
+    protected function getTargetName(): string
+    {
+        foreach ($this->model->getFieldConfigurations() as $fieldConfiguration) {
+            if ($fieldConfiguration->isIsTarget()) {
+                return $fieldConfiguration->getName();
+            }
+        }
+        return '';
+    }
+
+    protected function getFeatures(): array
+    {
+        $features = [];
+        foreach ($this->model->getFieldConfigurations() as $fieldConfiguration) {
+            if ($fieldConfiguration->isIsTarget() or $fieldConfiguration->isIsIgnored()) {
+                continue;
+            }
+            $features[] = $fieldConfiguration->getName();
+        }
+        return $features;
+    }
+
+    protected function getTextFeatures()
+    {
+        $features = [];
+        foreach ($this->model->getFieldConfigurations() as $fieldConfiguration) {
+            if ($fieldConfiguration->isIsTarget() or $fieldConfiguration->isIsIgnored()) {
+                continue;
+            }
+            if ($fieldConfiguration->getType() !== "text") {
+                continue;
+            }
+            $features[] = $fieldConfiguration->getName();
+        }
+        return $features;
+    }
+
+
+    protected function getNumericalFeatures()
+    {
+        $features = [];
+        foreach ($this->model->getFieldConfigurations() as $fieldConfiguration) {
+            if ($fieldConfiguration->isIsTarget() or $fieldConfiguration->isIsIgnored()) {
+                continue;
+            }
+            if ($fieldConfiguration->getType() === "text") {
+                continue;
+            }
+            $features[] = $fieldConfiguration->getName();
+        }
+        return $features;
     }
 
 }

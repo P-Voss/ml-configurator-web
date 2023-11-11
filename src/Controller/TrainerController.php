@@ -147,38 +147,21 @@ class TrainerController extends AbstractController
                 'message' => 'invalid modelId',
             ], Response::HTTP_UNAUTHORIZED);
         }
-        /**
-         * @todo Fieldconfiguration direkt in Model oder eigene Trainings-Entity legen
-         */
-        $uploadFile = $model->getUploadFile();
-        if (!$uploadFile) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'invalid modelId',
-            ], Response::HTTP_NOT_FOUND);
-        }
-        $configuration = $uploadFile->getFieldConfigurations();
-        if (!$configuration) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'invalid modelId',
-            ], Response::HTTP_NOT_FOUND);
-        }
 
-        $data = json_decode($configuration);
-        foreach ($data as $field) {
-            if ($field->name === $request->get('fieldname', '')) {
-                $field->isTarget = true;
-                $field->ignore = false;
+        foreach ($model->getFieldConfigurations() as $field) {
+            if ($field->getId() === (int) $request->get('fieldId', '')) {
+                $field->setIsTarget(true)
+                    ->setIsIgnored(false);
+            } else {
+                $field->setIsTarget(false);
             }
         }
-        $configuration = json_encode(array_values($data));
-        $uploadFile->setFieldConfigurations($configuration);
         $model->setUpdatedate(new \DateTime());
         $this->entityManager->flush();
 
         return new JsonResponse([
             'success' => true,
+            'fieldConfigurations' => $model->getFieldConfigurations()->toArray(),
         ]);
     }
 
@@ -199,38 +182,19 @@ class TrainerController extends AbstractController
                 'message' => 'invalid modelId',
             ], Response::HTTP_UNAUTHORIZED);
         }
-        /**
-         * @todo Fieldconfiguration direkt in Model oder eigene Trainings-Entity legen
-         */
-        $uploadFile = $model->getUploadFile();
-        if (!$uploadFile) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'invalid modelId',
-            ], Response::HTTP_NOT_FOUND);
-        }
-        $configuration = $uploadFile->getFieldConfigurations();
-        if (!$configuration) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'invalid modelId',
-            ], Response::HTTP_NOT_FOUND);
-        }
 
-        $data = json_decode($configuration);
-        foreach ($data as $field) {
-            if ($field->name === $request->get('fieldname', '')) {
-                $field->isTarget = false;
-                $field->ignore = false;
+        foreach ($model->getFieldConfigurations() as $field) {
+            if ($field->getId() === (int) $request->get('fieldId', '')) {
+                $field->setIsTarget(false)
+                    ->setIsIgnored(false);
             }
         }
-        $configuration = json_encode(array_values($data));
-        $uploadFile->setFieldConfigurations($configuration);
         $model->setUpdatedate(new \DateTime());
         $this->entityManager->flush();
 
         return new JsonResponse([
             'success' => true,
+            'fieldConfigurations' => $model->getFieldConfigurations()->toArray(),
         ]);
     }
 
@@ -250,38 +214,18 @@ class TrainerController extends AbstractController
                 'message' => 'invalid modelId',
             ], Response::HTTP_UNAUTHORIZED);
         }
-        /**
-         * @todo Fieldconfiguration direkt in Model oder eigene Trainings-Entity legen
-         */
-        $uploadFile = $model->getUploadFile();
-        if (!$uploadFile) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'invalid modelId',
-            ], Response::HTTP_NOT_FOUND);
-        }
-        $configuration = $uploadFile->getFieldConfigurations();
-        if (!$configuration) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'invalid modelId',
-            ], Response::HTTP_NOT_FOUND);
-        }
-
-        $data = json_decode($configuration, );
-        foreach ($data as $field) {
-            if ($field->name === $request->get('fieldname', '')) {
-                $field->isTarget = false;
-                $field->ignore = true;
+        foreach ($model->getFieldConfigurations() as $field) {
+            if ($field->getId() === (int) $request->get('fieldId', '')) {
+                $field->setIsTarget(false)
+                    ->setIsIgnored(true);
             }
         }
-        $configuration = json_encode(array_values($data));
-        $uploadFile->setFieldConfigurations($configuration);
         $model->setUpdatedate(new \DateTime());
         $this->entityManager->flush();
 
         return new JsonResponse([
             'success' => true,
+            'fieldConfigurations' => $model->getFieldConfigurations()->toArray(),
         ]);
     }
 
@@ -301,38 +245,19 @@ class TrainerController extends AbstractController
                 'message' => 'invalid modelId',
             ], Response::HTTP_UNAUTHORIZED);
         }
-        /**
-         * @todo Fieldconfiguration direkt in Model oder eigene Trainings-Entity legen
-         */
-        $uploadFile = $model->getUploadFile();
-        if (!$uploadFile) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'invalid modelId',
-            ], Response::HTTP_NOT_FOUND);
-        }
-        $configuration = $uploadFile->getFieldConfigurations();
-        if (!$configuration) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'invalid modelId',
-            ], Response::HTTP_NOT_FOUND);
-        }
 
-        $data = json_decode($configuration);
-        foreach ($data as $field) {
-            if ($field->name === $request->get('fieldname', '')) {
-                $field->isTarget = false;
-                $field->ignore = false;
+        foreach ($model->getFieldConfigurations() as $field) {
+            if ($field->getId() === (int) $request->get('fieldId', '')) {
+                $field->setIsTarget(false)
+                    ->setIsIgnored(false);
             }
         }
-        $configuration = json_encode(array_values($data));
-        $uploadFile->setFieldConfigurations($configuration);
         $model->setUpdatedate(new \DateTime());
         $this->entityManager->flush();
 
         return new JsonResponse([
             'success' => true,
+            'fieldConfigurations' => $model->getFieldConfigurations()->toArray(),
         ]);
     }
 
@@ -506,11 +431,6 @@ class TrainerController extends AbstractController
         $codegenerator = $state->getCodegenerator();
 
         try {
-            $uploadFile = $model->getUploadFile();
-            /** @var resource $data */
-            $data = $uploadFile->getContent();
-            file_put_contents($pathGenerator->getCsvFile(), stream_get_contents($data));
-
             $script = $codegenerator->generateTrainingScript($pathGenerator);
 
             file_put_contents($pathGenerator->getPythonFile(), $script);
@@ -525,7 +445,12 @@ class TrainerController extends AbstractController
                 ->setEncodedModel(base64_encode($modelData))
                 ->setModelHash(md5($modelData));
             $this->entityManager->persist($task);
-            $state->addTrainingTask($task);
+
+            $state->addTrainingTask($task)
+                ->setModelFile($pathGenerator)
+                ->setCheckpointFile($pathGenerator)
+                ->setScalerFile($pathGenerator);
+
             $this->entityManager->flush();
 
         } catch (\Exception $exception) {

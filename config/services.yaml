@@ -24,7 +24,8 @@ services:
             $trainingPythonDir: '%kernel.project_dir%/data/training/python/'
 
             # upload directory for training data
-            $trainingCsvDir: '%kernel.project_dir%/data/training/csv/'
+#            $trainingCsvDir: '%kernel.project_dir%/data/training/csv/'
+            $trainingCsvDir: '%kernel.project_dir%/data/samples/'
 
             # directory for training reports
             $trainingReportDir: '%kernel.project_dir%/data/training/reports/'

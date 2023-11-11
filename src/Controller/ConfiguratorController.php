@@ -8,6 +8,8 @@ use App\Entity\Model;
 use App\Entity\User;
 use App\Enum\ModelTypes;
 use App\Repository\ModelRepository;
+use App\Service\Dataset;
+use App\Service\FieldConfigurationGenerator;
 use App\State\Modeltype\AbstractState;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,12 +26,15 @@ class ConfiguratorController extends AbstractController
     {}
 
     #[Route('/{_locale<en|de>}/configurator/initialize', name: 'app_configurator_init', methods: ["POST"])]
-    public function initialize(Request $request, ModelRepository $repository, #[CurrentUser] User $user): JsonResponse
+    public function initialize(Request $request, ModelRepository $repository, #[CurrentUser] User $user, Dataset $datasetService): JsonResponse
     {
         try {
             $modeltype = ModelTypes::from($request->get('modeltype'));
         } catch (\Exception $error) {
             throw new \Exception("invalid modeltype");
+        }
+        if (!Dataset::isValidDataset($request->get('dataset', ''))) {
+            throw new \Exception("invalid dataset");
         }
 
         $lookup = "";
@@ -49,9 +54,16 @@ class ConfiguratorController extends AbstractController
             ->setCreationdate(new \DateTime())
             ->setUpdatedate(new \DateTime())
             ->setDescription($request->get('description', ''))
+            ->setDataset($request->get('dataset', ''))
             ->setType($modeltype->value);
 
         $this->entityManager->persist($model);
+
+        foreach ($datasetService->getDefaultConfigurations($model->getDataset()) as $configuration) {
+            $configuration->setModel($model);
+            $this->entityManager->persist($configuration);
+        }
+
         $this->entityManager->flush();
 
         return new JsonResponse([

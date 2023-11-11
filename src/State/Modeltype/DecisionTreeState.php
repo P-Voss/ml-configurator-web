@@ -6,6 +6,7 @@ use App\CodeGenerator\AbstractCodegenerator;
 use App\CodeGenerator\DecisionTree;
 use App\Entity\DecisiontreeConfiguration;
 use App\Entity\TrainingTask;
+use App\Service\TrainingPathGenerator;
 
 class DecisionTreeState extends AbstractState
 {
@@ -144,6 +145,25 @@ class DecisionTreeState extends AbstractState
         }
 
         return $bestId;
+    }
+
+
+    public function setModelFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setModelPath($pathGenerator->getModelFile('joblib'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
+    }
+
+    public function setCheckpointFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        return $this;
+    }
+
+    public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        return $this;
     }
 
 }

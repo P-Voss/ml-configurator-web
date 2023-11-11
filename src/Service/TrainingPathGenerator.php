@@ -47,24 +47,24 @@ class TrainingPathGenerator
         $this->lookup = $lookup;
     }
 
-    public function getCsvFile(): string
+    public function getCsvFile(string $filename): string
     {
-        return $this->trainingCsvDir . 'data_' . $this->lookup . '.txt';
+        return $this->trainingCsvDir . $filename;
     }
 
     public function getCheckpointFile(string $extension): string
     {
-        return $this->getFilepath($this->checkpointDir, 'checkpoint', $extension);
+        return $this->checkpointDir . 'checkpoint_' . $this->lookup . $extension;
     }
 
     public function getModelFile(string $extension): string
     {
-        return $this->getFilepath($this->modelDir, 'model', $extension);
+        return $this->modelDir . 'model_' . $this->lookup . $extension;
     }
 
     public function getScalerFile(string $extension): string
     {
-        return $this->getFilepath($this->scalerDir, 'scaler', $extension);
+        return $this->scalerDir . 'scaler_' . $this->lookup . $extension;
     }
 
     public function getPythonFile(): string

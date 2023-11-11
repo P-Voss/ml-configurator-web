@@ -8,6 +8,7 @@ use App\CodeGenerator\Feedforward;
 use App\Entity\Layer;
 use App\Entity\TrainingTask;
 use App\Enum\LayerTypes;
+use App\Service\TrainingPathGenerator;
 
 class NeuralNetState extends AbstractState
 {
@@ -15,7 +16,7 @@ class NeuralNetState extends AbstractState
     /**
      * @throws \Exception
      */
-    public function addLayer(Layer $layer): void
+    public function addLayer(Layer $layer): StateInterface
     {
         $type = LayerTypes::from($layer->getType());
         if ($type === LayerTypes::LAYER_TYPE_LSTM || $type === LayerTypes::LAYER_TYPE_GRU) {
@@ -27,6 +28,7 @@ class NeuralNetState extends AbstractState
         }
 
         $this->model->addLayer($layer);
+        return $this;
     }
 
     public function removeLayer(Layer $layer)
@@ -137,6 +139,30 @@ class NeuralNetState extends AbstractState
     public function getCodegenerator(): AbstractCodegenerator
     {
         return new Feedforward($this->model);
+    }
+
+    public function setModelFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setModelPath($pathGenerator->getModelFile('h5'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
+    }
+
+    public function setCheckpointFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setCheckpointPath($pathGenerator->getCheckpointFile('h5'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
+    }
+
+    public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setScalerPath($pathGenerator->getScalerFile('pkl'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
     }
 
 }

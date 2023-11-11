@@ -13,6 +13,7 @@ use App\Entity\SvmConfiguration;
 use App\Entity\TrainingTask;
 use App\Enum\ModelTypes;
 use App\Event\SubjectTrait;
+use App\Service\TrainingPathGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
@@ -94,6 +95,7 @@ abstract class AbstractState implements StateInterface
 
     abstract public function setHyperParameter(array $params = []);
 
+
     public function validBaseData(): bool {
         if (mb_strlen(trim($this->model->getName())) < "3") {
             return false;
@@ -137,7 +139,7 @@ abstract class AbstractState implements StateInterface
             ->setUpdatedate(new \DateTime());
     }
 
-    public function addLayer(Layer $layer)
+    public function addLayer(Layer $layer): StateInterface
     {
         throw new Exception("Invalid operation");
     }
@@ -174,35 +176,30 @@ abstract class AbstractState implements StateInterface
 
     public function validFieldConfiguration(): bool
     {
-        $uploadFile = $this->model->getUploadFile();
-        if (!$uploadFile) {
-            return false;
-        }
-        $configuration = $uploadFile->getFieldConfigurations();
-        if (!$configuration) {
-            return false;
-        }
-        $fields = json_decode($configuration);
-        if (count($fields) === 0) {
-            return false;
-        }
         $hasTarget = false;
-        foreach ($fields as $field) {
-            if ($field->isTarget) {
+        $hasFeatures = false;
+        foreach ($this->model->getFieldConfigurations()->toArray() as $configuration) {
+            if ($configuration->isIsTarget()) {
                 $hasTarget = true;
             }
+            if (!$configuration->isIsTarget() && !$configuration->isIsIgnored()) {
+                $hasFeatures = true;
+            }
         }
-        if (!$hasTarget) {
+        if (!$hasTarget || !$hasFeatures) {
             return false;
         }
 
         return true;
     }
 
-    public function addTrainingTask(TrainingTask $task)
+
+    public function addTrainingTask(TrainingTask $task): StateInterface
     {
         $this->model->addTrainingTask($task)
             ->setUpdatedate(new \DateTime());
+
+        return $this;
     }
 
     public function jsonSerialize(): array

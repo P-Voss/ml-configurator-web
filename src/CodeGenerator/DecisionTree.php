@@ -16,9 +16,8 @@ class DecisionTree extends AbstractCodegenerator
      */
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
-        $uploadFile = $this->model->getUploadFile();
-        $targetName = $uploadFile->getTargetName();
-        $features = $uploadFile->getFeatures();
+        $targetName = htmlentities($this->getTargetName());
+        $features = array_map('htmlentities', $this->getFeatures());
         if ($targetName === '') {
             throw new \Exception('invalid field configuration');
         }
@@ -66,9 +65,8 @@ class DecisionTree extends AbstractCodegenerator
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            'data = pd.read_csv("%s", delimiter=";", header=0 if %s else None)',
-            $pathGenerator->getCsvFile(),
-            $uploadFile->isContainsHeader()
+            'data = pd.read_csv("%s", delimiter=";", header=0)',
+            $this->getDataPath($pathGenerator),
         );
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
@@ -164,9 +162,8 @@ class DecisionTree extends AbstractCodegenerator
 
     public function getExampleScript(): string
     {
-        $uploadFile = $this->model->getUploadFile();
-        $targetName = htmlentities($uploadFile->getTargetName());
-        $features = array_map('htmlentities', $uploadFile->getFeatures());
+        $targetName = htmlentities($this->getTargetName());
+        $features = array_map('htmlentities', $this->getFeatures());
         if ($targetName === '') {
             throw new \Exception('invalid field configuration');
         }
@@ -207,10 +204,7 @@ class DecisionTree extends AbstractCodegenerator
 
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
-        $innerLines[] = sprintf(
-            'data = pd.read_csv("__CSV_LOG_FILE__", delimiter=";", header=0 if %s else None)',
-            $uploadFile->isContainsHeader()
-        );
+        $innerLines[] = 'data = pd.read_csv("__CSV_LOG_FILE__", delimiter=";", header=0)';
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
         );

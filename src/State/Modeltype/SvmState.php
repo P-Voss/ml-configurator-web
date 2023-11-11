@@ -6,6 +6,7 @@ use App\CodeGenerator\AbstractCodegenerator;
 use App\CodeGenerator\Svm;
 use App\Entity\SvmConfiguration;
 use App\Entity\TrainingTask;
+use App\Service\TrainingPathGenerator;
 
 class SvmState extends AbstractState
 {
@@ -129,6 +130,25 @@ class SvmState extends AbstractState
         }
 
         return $bestId;
+    }
+
+
+    public function setModelFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setModelPath($pathGenerator->getModelFile('joblib'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
+    }
+
+    public function setCheckpointFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        return $this;
+    }
+
+    public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        return $this;
     }
 
 }

@@ -11,6 +11,7 @@ use App\Entity\Model;
 use App\Entity\SvmConfiguration;
 use App\Entity\TrainingTask;
 use App\Enum\ModelTypes;
+use App\Service\TrainingPathGenerator;
 
 interface StateInterface extends \JsonSerializable, \SplSubject
 {
@@ -29,7 +30,7 @@ interface StateInterface extends \JsonSerializable, \SplSubject
 
     public function setDescription(string $description);
 
-    public function addLayer(Layer $layer);
+    public function addLayer(Layer $layer): StateInterface;
 
     public function removeLayer(Layer $layer);
 
@@ -51,6 +52,12 @@ interface StateInterface extends \JsonSerializable, \SplSubject
 
     public function validFieldConfiguration(): bool;
 
-    public function addTrainingTask(TrainingTask $task);
+    public function addTrainingTask(TrainingTask $task): StateInterface;
+
+    public function setModelFile(TrainingPathGenerator $pathGenerator): StateInterface;
+
+    public function setCheckpointFile(TrainingPathGenerator $pathGenerator): StateInterface;
+
+    public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface;
 
 }

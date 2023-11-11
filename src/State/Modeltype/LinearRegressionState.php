@@ -5,6 +5,7 @@ namespace App\State\Modeltype;
 use App\CodeGenerator\AbstractCodegenerator;
 use App\CodeGenerator\LinearRegression;
 use App\Entity\LinRegConfiguration;
+use App\Service\TrainingPathGenerator;
 
 class LinearRegressionState extends AbstractState
 {
@@ -109,6 +110,24 @@ class LinearRegressionState extends AbstractState
         }
 
         return true;
+    }
+
+    public function setModelFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setModelPath($pathGenerator->getModelFile('joblib'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
+    }
+
+    public function setCheckpointFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        return $this;
+    }
+
+    public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        return $this;
     }
 
     public function getCodegenerator(): AbstractCodegenerator

@@ -6,6 +6,7 @@ use App\CodeGenerator\AbstractCodegenerator;
 use App\CodeGenerator\Rnn;
 use App\Entity\Layer;
 use App\Enum\LayerTypes;
+use App\Service\TrainingPathGenerator;
 
 class RnnState extends AbstractState
 {
@@ -13,7 +14,7 @@ class RnnState extends AbstractState
     /**
      * @throws \Exception
      */
-    public function addLayer(Layer $layer): void
+    public function addLayer(Layer $layer): StateInterface
     {
         $type = LayerTypes::from($layer->getType());
         if ($this->model->getLayers()->count() === 0 and $type === LayerTypes::LAYER_TYPE_DROPOUT) {
@@ -21,6 +22,7 @@ class RnnState extends AbstractState
         }
 
         $this->model->addLayer($layer);
+        return $this;
     }
 
     public function removeLayer(Layer $layer)
@@ -114,5 +116,28 @@ class RnnState extends AbstractState
         return new Rnn($this->model);
     }
 
+    public function setModelFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setModelPath($pathGenerator->getModelFile('h5'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
+    }
+
+    public function setCheckpointFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setCheckpointPath($pathGenerator->getCheckpointFile('h5'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
+    }
+
+    public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setScalerPath($pathGenerator->getScalerFile('pkl'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
+    }
 
 }
