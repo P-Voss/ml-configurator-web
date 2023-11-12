@@ -8,9 +8,11 @@ use App\Entity\Model;
 use App\Entity\User;
 use App\Enum\ModelTypes;
 use App\Repository\ModelRepository;
+use App\Repository\TrainingTaskRepository;
 use App\Service\Dataset;
 use App\Service\FieldConfigurationGenerator;
 use App\Service\KeywordTrait;
+use App\Service\Rollback;
 use App\State\Modeltype\AbstractState;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -113,10 +115,47 @@ class ConfiguratorController extends AbstractController
     }
 
 
-    #[Route('/{_locale<en|de>}/configurator/copy', name: 'app_configurator_copy', methods: ["POST"])]
-    public function copy(Request $request, ModelRepository $repository, #[CurrentUser] User $user): Response
+    #[Route('/{_locale<en|de>}/configurator/rollback', name: 'app_configurator_rollback', methods: ['POST'])]
+    public function rollbackConfiguration(
+        #[CurrentUser] User $user,
+        Request $request,
+        ModelRepository $repository,
+        TrainingTaskRepository $taskRepository,
+        Rollback $rollbackService
+    )
     {
-        return $this->redirectToRoute('app_index');
+        $model = $repository->find($request->get('id', 0));
+        if (!$model) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_NOT_FOUND);
+        }
+        if ($model->getStudent()->getId() !== $user->getId()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $task = $taskRepository->find($request->get('taskId', 0));
+        if (!$task) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Invalid task specified',
+            ]);
+        }
+        if ($task->getModel()->getId() !==  $model->getId()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Invalid task specified',
+            ]);
+        }
+
+        $rollbackService->rollback($model, $task);
+
+        return new JsonResponse([
+            'success' => true
+        ]);
     }
 
 }

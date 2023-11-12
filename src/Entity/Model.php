@@ -387,7 +387,6 @@ class Model implements \JsonSerializable
             'linRegConfiguration' => $this->linRegConfiguration,
             'svmConfiguration' => $this->svmConfiguration,
             'hyperparameters' => $this->hyperparameters,
-//            'uploadFile' => $this->uploadFile,
         ];
     }
 

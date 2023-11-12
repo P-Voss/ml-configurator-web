@@ -208,6 +208,7 @@ class TrainingTask implements \JsonSerializable
             'endDatetime' => $endDatetime,
             'result' => $result,
             'log' => $log,
+            'modelHash' => $this->modelHash,
         ];
     }
 

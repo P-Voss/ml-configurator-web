@@ -242,6 +242,7 @@ abstract class AbstractState implements StateInterface
             'validBaseData' => $this->validBaseData(),
             'validArchitecture' => $this->validArchitecture(),
             'validFieldConfiguration' => $this->validFieldConfiguration(),
+            'configurationHash' => md5(json_encode($model)),
         ];
     }
 
