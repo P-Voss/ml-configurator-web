@@ -467,7 +467,6 @@ class TrainerController extends AbstractController
     public function executeTask(
         Request $request,
         TrainingTaskRepository $taskRepository,
-        TrainingPathGenerator $pathGenerator,
     )
     {
         $runningTask = $taskRepository->findBy(['state' => TrainingTask::STATE_PROGRESS]);
@@ -480,6 +479,12 @@ class TrainerController extends AbstractController
 
         $task = $taskRepository->find($request->get('taskId'));
         if (!$task) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'Invalid task specified',
+            ]);
+        }
+        if ($task->getState() === TrainingTask::STATE_COMPLETED) {
             return new JsonResponse([
                 'success' => false,
                 'message' => 'Invalid task specified',
