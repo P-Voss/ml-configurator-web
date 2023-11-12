@@ -136,5 +136,17 @@ class DecisiontreeConfiguration implements \JsonSerializable
         ];
     }
 
+    public function createCopy(): DecisiontreeConfiguration
+    {
+        $conf = new DecisiontreeConfiguration();
+        $conf->setQualityMeasure($this->qualityMeasure)
+            ->setMissingValueHandling($this->missingValueHandling)
+            ->setMinSamplesLeaf($this->minSamplesLeaf)
+            ->setMinSampleSplit($this->minSampleSplit)
+            ->setMaxDepth($this->maxDepth)
+            ->setMaxFeatures($this->maxFeatures);
+        return $conf;
+    }
+
 
 }

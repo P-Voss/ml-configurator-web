@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Enum\ModelTypes;
 use App\Repository\ModelRepository;
+use App\Service\Dataset;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -362,6 +363,11 @@ class Model implements \JsonSerializable
         } catch (\ValueError $exception) {
             return '';
         }
+    }
+
+    public function getDatasetName(): string
+    {
+        return Dataset::getLocalizationKey($this->dataset);
     }
 
     public function jsonSerialize(): array

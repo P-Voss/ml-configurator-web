@@ -20,6 +20,7 @@ index:
   button.configure: "configure"
   button.train: "train"
   button.execute: "execute"
+  button.share: "share"
 
   label.creationdate: "created on "
   label.changedate: "last changed on "
@@ -27,6 +28,10 @@ index:
   tooltip.copy: "copy model"
   tooltip.delete: "delete model"
 
+  headline.share: "Share your model"
+
+
+  prompt.confirmDelete: "Do you really want to delete this model?"
 models:
   type.rnn: "Recurrent Neural Network (RNN)"
   type.nn: "Feedforward Neural Network"
@@ -34,3 +39,9 @@ models:
   type.logreg: "Logistical Regression"
   type.svm: "Support Vector Machine (SVM)"
   type.dtree: "Decision Tree"
+datasets:
+  type.abalone: "dataset: abalone measurements"
+  type.seeds: "dataset: wheat seeds"
+  type.iris: "dataset: iris"
+  type.weather: "dataset: weather in Arkona"
+  type.wine: "dataset: wine quality"

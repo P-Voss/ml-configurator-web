@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\ModelRepository;
+use App\Repository\UserRepository;
+use App\Service\Export;
 use App\State\Modeltype\AbstractState;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -131,6 +133,62 @@ class IndexController extends AbstractController
         $this->entityManager->flush();
 
         return $this->redirectToRoute('app_index');
+    }
+
+    #[Route('/{_locale<en|de>}/model/share', name: 'app_model_share', methods: ["POST"])]
+    public function share(
+        Request $request,
+        ModelRepository $repository,
+        UserRepository $userRepository,
+        #[CurrentUser] User $user,
+        Export $exportService
+    ): Response
+    {
+        $student = $userRepository->find($request->get('studentId'));
+        $model = $repository->find($request->get('modelId', 0));
+        if (!$model) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_NOT_FOUND);
+        }
+        if (!$student) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid studentId',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($model->getStudent()->getId() !== $user->getId()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $exportService->exportToUser($model, $student);
+
+        return $this->redirectToRoute('app_index');
+    }
+
+    #[Route('/{_locale<en|de>}/user/list', name: 'app_user_list', methods: ["GET"])]
+    public function userlist(UserRepository $userRepository, #[CurrentUser] User $user): JsonResponse
+    {
+        $users = [];
+        foreach ($userRepository->findBy([], ['email' => 'ASC']) as $student) {
+            if ($student->getId() === $user->getId()) {
+                continue;
+            }
+            $users[] = [
+                'id' => $student->getId(),
+                'name' => $student->getEmail()
+            ];
+        }
+
+        return new JsonResponse([
+            'success' => true,
+            'users' => $users,
+        ]);
     }
 
 }

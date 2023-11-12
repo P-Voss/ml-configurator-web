@@ -14,6 +14,7 @@
                         <div class="col-10">
                             <h5 class="card-title">{{ model.name }}</h5>
                             <h6 class="card-subtitle mb-2 text-muted">{{ model.modeltypeName|trans }}</h6>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ model.datasetName|trans }}</h6>
                             <p class="text-muted">
                                 {{ "index.label.creationdate"|trans }} {{ model.creationdate|format_datetime('medium', 'medium') }}
                             </p>
@@ -24,20 +25,26 @@
                         <div class="col-2">
                             <div class="row g-2">
                                 <div class="col-12">
-                                    <form method="post" action="{{ path('app_configurator_copy') }}">
+                                    <form method="post" action="{{ path('app_model_delete') }}">
                                         <input type="hidden" name="modelId" value="{{ model.id }}" />
+                                        <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirmDelete()">
+                                            <span class="material-symbols-outlined">delete_forever</span>
+                                        </button>
+                                    </form>
+                                </div>
+                                <div class="col-12">
+                                    <form method="post" action="{{ path('app_model_share') }}">
+                                        <input type="hidden" name="modelId" value="{{ model.id }}" />
+                                        <input type="hidden" name="studentId" value="{{ app.user.id }}" />
                                         <button type="submit" class="btn btn-outline-info btn-sm">
                                             <span class="material-symbols-outlined" >file_copy</span>
                                         </button>
                                     </form>
                                 </div>
                                 <div class="col-12">
-                                    <form method="post" action="{{ path('app_model_delete') }}">
-                                        <input type="hidden" name="modelId" value="{{ model.id }}" />
-                                        <button type="submit" class="btn btn-outline-danger btn-sm">
-                                            <span class="material-symbols-outlined" >delete_forever</span>
-                                        </button>
-                                    </form>
+                                    <button type="submit" class="btn btn-outline-info btn-sm share-button" data-id="{{ model.id }}">
+                                        <span class="material-symbols-outlined" >share</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -86,6 +93,32 @@
         </div>
 
         {% endfor %}
+        <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="shareModalLabel">{{ "index.headline.share"|trans }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form method="post" action="{{ path('app_model_share') }}">
+                            <div class="row">
+                                <div class="col-12 col-lg-2">
+                                    <label class="form-label" for="userselect">User</label>
+                                </div>
+                                <div class="col-12 col-lg-7">
+                                    <select class="form-select" id="userselect" name="studentId"></select>
+                                </div>
+                                <div class="col-12 col-lg-3">
+                                    <input type="hidden" id="shareModelId" name="modelId"/>
+                                    <button type="submit" class="btn btn-primary" id="shareButton">{{ "index.button.share"|trans }}</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
 {% endblock %}
@@ -93,4 +126,37 @@
 
 {% block javascripts %}
     {{ encore_entry_script_tags('configurator') }}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.share-button').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    fetch("{{ path('app_user_list') }}")
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                let select = document.getElementById('userselect')
+                                for (let user of data.users) {
+                                    let option = document.createElement("option")
+                                    option.value = user.id
+                                    option.text = user.name
+                                    select.add(option)
+                                }
+                                document.getElementById('shareModelId').value = button.getAttribute('data-id')
+                                new bootstrap.Modal(document.getElementById('shareModal')).show();
+                            }
+                        });
+
+                });
+            });
+
+            document.getElementById('shareButton').addEventListener('click', function() {
+            });
+        });
+
+        function confirmDelete() {
+            return confirm("{{ "index.prompt.confirmDelete"|trans }}");
+        }
+    </script>
+
 {% endblock %}

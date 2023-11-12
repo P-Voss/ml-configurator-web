@@ -91,5 +91,13 @@ class SvmConfiguration implements \JsonSerializable
         ];
     }
 
+    public function createCopy(): SvmConfiguration
+    {
+        $conf = new SvmConfiguration();
+        $conf->setC($this->c)
+            ->setDegree($this->degree)
+            ->setKernel($this->kernel);
+        return $conf;
+    }
 
 }

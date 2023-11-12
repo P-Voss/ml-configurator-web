@@ -72,4 +72,12 @@ class LinRegConfiguration implements \JsonSerializable
         ];
     }
 
+    public function createCopy(): LinRegConfiguration
+    {
+        $conf = new LinRegConfiguration();
+        $conf->setAlpha($this->alpha)
+            ->setRegularizationType($this->regularizationType);
+        return $conf;
+    }
+
 }

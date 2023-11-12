@@ -88,4 +88,13 @@ class LogRegConfiguration implements \JsonSerializable
         ];
     }
 
+    public function createCopy(): LogRegConfiguration
+    {
+        $conf = new LogRegConfiguration();
+        $conf->setLambda($this->lambda)
+            ->setRegularizerType($this->regularizerType)
+            ->setSolver($this->solver);
+        return $conf;
+    }
+
 }

@@ -19,6 +19,23 @@ class Dataset
         return in_array($dataset, [self::DATASET_WINE, self::DATASET_IRIS, self::DATASET_SEEDS, self::DATASET_ABALONE, self::DATASET_WEATHER]);
     }
 
+    public static function getLocalizationKey(string $dataset): string
+    {
+        switch ($dataset) {
+            case self::DATASET_ABALONE:
+                return "datasets.type.abalone";
+            case self::DATASET_WEATHER:
+                return "datasets.type.weather";
+            case self::DATASET_IRIS:
+                return "datasets.type.iris";
+            case self::DATASET_SEEDS:
+                return "datasets.type.seeds";
+            case self::DATASET_WINE:
+                return "datasets.type.wine";
+        }
+        return '';
+    }
+
     public static function getFilename(string $dataset): string
     {
         switch ($dataset) {

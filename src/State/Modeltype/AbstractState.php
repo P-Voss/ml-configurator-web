@@ -42,6 +42,7 @@ abstract class AbstractState implements StateInterface
         $this->clearConfiguration();
         foreach ($this->model->getFieldConfigurations() as $fieldConfiguration) {
             $this->model->removeFieldConfiguration($fieldConfiguration);
+            $this->entityManager->remove($fieldConfiguration);
         }
         if (file_exists($this->model->getModelPath())) {
             unlink($this->model->getModelPath());

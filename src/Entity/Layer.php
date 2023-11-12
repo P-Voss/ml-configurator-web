@@ -165,8 +165,23 @@ class Layer implements \JsonSerializable
             'recurrentDropoutRate' => $this->recurrentDropoutRate / 100,
             'regularizationType' => $this->regularizationType,
             'regularizationLambda' => $this->regularizationLambda / 100,
+            'returnSequences' => $this->returnSequences,
         ];
     }
 
+
+    public function createCopy(): Layer
+    {
+        $conf = new Layer();
+        $conf->setType($this->type)
+            ->setRegularizationType($this->regularizationType)
+            ->setReturnSequences($this->returnSequences)
+            ->setRegularizationLambda($this->regularizationLambda)
+            ->setDropoutQuote($this->dropoutQuote)
+            ->setRecurrentDropoutRate($this->recurrentDropoutRate)
+            ->setActivationFunction($this->activationFunction)
+            ->setNeuronCount($this->neuronCount);
+        return $conf;
+    }
 
 }

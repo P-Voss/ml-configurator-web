@@ -20,6 +20,7 @@ index:
   button.configure: "konfigurieren"
   button.train: "trainieren"
   button.execute: "ausführen"
+  button.share: "Teilen"
 
   label.creationdate: "Erstellt am: "
   label.changedate: "Zuletzt geändert am: "
@@ -27,6 +28,9 @@ index:
   tooltip.copy: "Kopieren"
   tooltip.delete: "Löschen"
 
+  headline.share: "Modell teilen"
+
+  prompt.confirmDelete: "Sind Sie sicher, dass Sie dieses Modell löschen möchten?"
 models:
   type.rnn: "Recurrent Neural Network (RNN)"
   type.nn: "Neuronales Netz (Feedforward)"
@@ -34,3 +38,9 @@ models:
   type.logreg: "Logistische Regression"
   type.svm: "Support Vector Machine (SVM)"
   type.dtree: "Decision Tree"
+datasets:
+  type.abalone: "Datensatz: Meeresschnecken"
+  type.seeds: "Datensatz: Weizenarten"
+  type.iris: "Datensatz: Lilienblüten"
+  type.weather: "Datensatz: Wetter in Arkona"
+  type.wine: "Datensatz: Weinqualität"

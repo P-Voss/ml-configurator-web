@@ -10,6 +10,7 @@ use App\Enum\ModelTypes;
 use App\Repository\ModelRepository;
 use App\Service\Dataset;
 use App\Service\FieldConfigurationGenerator;
+use App\Service\KeywordTrait;
 use App\State\Modeltype\AbstractState;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,8 @@ use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 class ConfiguratorController extends AbstractController
 {
+
+    use KeywordTrait;
 
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {}
@@ -40,7 +43,7 @@ class ConfiguratorController extends AbstractController
         $lookup = "";
         $lookupExists = true;
         while ($lookupExists) {
-            $lookup = $this->getAdverb() . $this->getAnimal();
+            $lookup = $this->getSize() . $this->getAdverb() . $this->getAnimal();
             $modelWithLookup = $repository->findOneBy(['lookup' => $lookup]);
             if (!$modelWithLookup) {
                 $lookupExists = false;
@@ -114,18 +117,6 @@ class ConfiguratorController extends AbstractController
     public function copy(Request $request, ModelRepository $repository, #[CurrentUser] User $user): Response
     {
         return $this->redirectToRoute('app_index');
-    }
-
-    private function getAdverb(): string {
-        $adverbs = ['apt', 'amazing', 'angry', 'radiant', 'pretty', 'smart', 'cool', 'friendly', 'best', 'bold', 'busy', 'brave', 'calm', 'captivating', 'clever', 'cheerful', 'cute', 'eager', 'enchanted', 'educated', 'fair', 'fine', 'free'];
-        $key = array_rand($adverbs);
-        return ucfirst($adverbs[$key]);
-    }
-
-    private function getAnimal(): string {
-        $animals = ['alpaca', 'bear', 'crow', 'dolphin', 'duck', 'eagle', 'ferret', 'frog', 'gecko', 'giraffe', 'goose', 'guppy', 'hare', 'hawk', 'hornet', 'horse', 'jaguar'];
-        $key = array_rand($animals);
-        return ucfirst($animals[$key]);
     }
 
 }

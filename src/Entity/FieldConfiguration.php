@@ -105,4 +105,14 @@ class FieldConfiguration implements \JsonSerializable
         ];
     }
 
+    public function createCopy(): FieldConfiguration
+    {
+        $conf = new FieldConfiguration();
+        $conf->setType($this->type)
+            ->setIsTarget($this->isTarget)
+            ->setIsIgnored($this->isIgnored)
+            ->setName($this->name);
+        return $conf;
+    }
+
 }
