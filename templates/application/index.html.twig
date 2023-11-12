@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Anwendung{% endblock %}
+
+{% block javascripts %}
+    {{ encore_entry_script_tags('application') }}
+{% endblock %}
+
+{% block body %}
+    <div id="app">
+        <Application
+                model-id="{{ modelId }}"
+                load-model-url="{{ path('app_configurator_loadmodel') }}"
+                configurator-url="{{ path('app_configurator', {id: modelId}) }}"
+                trainer-url="{{ path('app_trainer', {id: modelId}) }}"
+
+                execute-url="{{ path('app_application_execute') }}"
+        ></Application>
+    </div>
+
+{% endblock %}
