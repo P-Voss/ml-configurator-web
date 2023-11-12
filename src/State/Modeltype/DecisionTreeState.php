@@ -29,7 +29,7 @@ class DecisionTreeState extends AbstractState
      * @return void
      * @throws \Exception
      */
-    public function setHyperParameter(array $params = [])
+    public function setHyperParameter(array $params = []): void
     {
         if ($params['id']) {
             unset($params['id']);
@@ -165,5 +165,4 @@ class DecisionTreeState extends AbstractState
     {
         return $this;
     }
-
 }

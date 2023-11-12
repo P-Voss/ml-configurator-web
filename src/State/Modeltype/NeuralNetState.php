@@ -45,6 +45,7 @@ class NeuralNetState extends AbstractState
     {
         foreach ($this->model->getLayers() as $layer) {
             $this->model->removeLayer($layer);
+            $this->entityManager->remove($layer);
         }
     }
 

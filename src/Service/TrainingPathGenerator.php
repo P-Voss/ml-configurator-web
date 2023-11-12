@@ -54,17 +54,17 @@ class TrainingPathGenerator
 
     public function getCheckpointFile(string $extension): string
     {
-        return $this->checkpointDir . 'checkpoint_' . $this->lookup . $extension;
+        return $this->checkpointDir . 'checkpoint_' . $this->lookup . '.' . $extension;
     }
 
     public function getModelFile(string $extension): string
     {
-        return $this->modelDir . 'model_' . $this->lookup . $extension;
+        return $this->modelDir . 'model_' . $this->lookup . '.' . $extension;
     }
 
     public function getScalerFile(string $extension): string
     {
-        return $this->scalerDir . 'scaler_' . $this->lookup . $extension;
+        return $this->scalerDir . 'scaler_' . $this->lookup . '.' . $extension;
     }
 
     public function getPythonFile(): string

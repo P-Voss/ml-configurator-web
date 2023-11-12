@@ -13,7 +13,6 @@ use App\Entity\SvmConfiguration;
 use App\Entity\TrainingTask;
 use App\Enum\ModelTypes;
 use App\Event\SubjectTrait;
-use App\Service\TrainingPathGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
@@ -36,6 +35,37 @@ abstract class AbstractState implements StateInterface
         foreach ($this->observers as $observer) {
             $observer->update($this);
         }
+    }
+
+    public function delete(): void
+    {
+        $this->clearConfiguration();
+        foreach ($this->model->getFieldConfigurations() as $fieldConfiguration) {
+            $this->model->removeFieldConfiguration($fieldConfiguration);
+        }
+        if (file_exists($this->model->getModelPath())) {
+            unlink($this->model->getModelPath());
+        }
+        if (file_exists($this->model->getCheckpointPath())) {
+            unlink($this->model->getCheckpointPath());
+        }
+        if (file_exists($this->model->getScalerPath())) {
+            unlink($this->model->getScalerPath());
+        }
+        foreach ($this->model->getTrainingTasks() as $task) {
+            if (file_exists($task->getReportPath())) {
+                unlink($task->getReportPath());
+            }
+            if (file_exists($task->getLogPath())) {
+                unlink($task->getLogPath());
+            }
+            if (file_exists($task->getScriptPath())) {
+                unlink($task->getScriptPath());
+            }
+            $this->model->removeTrainingTask($task);
+            $this->entityManager->remove($task);
+        }
+        $this->entityManager->remove($this->model);
     }
 
     public function getCodegenerator(): AbstractCodegenerator
@@ -127,13 +157,13 @@ abstract class AbstractState implements StateInterface
         return self::getState($this->model, $this->entityManager);
     }
 
-    public function setName(string $name)
+    public function setName(string $name): void
     {
         $this->model->setName($name)
             ->setUpdatedate(new \DateTime());
     }
 
-    public function setDescription(string $description)
+    public function setDescription(string $description): void
     {
         $this->model->setDescription($description)
             ->setUpdatedate(new \DateTime());

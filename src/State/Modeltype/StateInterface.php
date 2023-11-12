@@ -16,6 +16,9 @@ use App\Service\TrainingPathGenerator;
 interface StateInterface extends \JsonSerializable, \SplSubject
 {
 
+
+    public function delete();
+
     public function setModeltype(ModelTypes $type): StateInterface;
 
     public function getCodegenerator(): AbstractCodegenerator;

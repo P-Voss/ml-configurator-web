@@ -109,50 +109,6 @@ class ConfiguratorController extends AbstractController
         ]);
     }
 
-    #[Route('/{_locale<en|de>}/configurator/delete', name: 'app_configurator_delete', methods: ["POST"])]
-    public function delete(Request $request, ModelRepository $repository, #[CurrentUser] User $user): Response
-    {
-        $model = $repository->find($request->get('modelId', 0));
-        if (!$model) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'invalid modelId',
-            ], Response::HTTP_NOT_FOUND);
-        }
-
-        if ($model->getStudent()->getId() !== $user->getId()) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'invalid modelId',
-            ], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $configuration = $model->getDecisiontreeConfiguration();
-        if ($configuration) {
-            $this->entityManager->remove($configuration);
-        }
-        $configuration = $model->getSvmConfiguration();
-        if ($configuration) {
-            $this->entityManager->remove($configuration);
-        }
-        $configuration = $model->getLinRegConfiguration();
-        if ($configuration) {
-            $this->entityManager->remove($configuration);
-        }
-        $configuration = $model->getLogRegConfiguration();
-        if ($configuration) {
-            $this->entityManager->remove($configuration);
-        }
-        foreach ($model->getLayers() as $layer) {
-            $model->removeLayer($layer);
-        }
-        $model->setHyperparameters([]);
-        $this->entityManager->remove($model);
-        $this->entityManager->flush();
-
-        return $this->redirectToRoute('app_index');
-    }
-
 
     #[Route('/{_locale<en|de>}/configurator/copy', name: 'app_configurator_copy', methods: ["POST"])]
     public function copy(Request $request, ModelRepository $repository, #[CurrentUser] User $user): Response

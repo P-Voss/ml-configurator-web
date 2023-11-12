@@ -100,4 +100,37 @@ class IndexController extends AbstractController
         ]);
     }
 
+    #[Route('/{_locale<en|de>}/model/delete', name: 'app_model_delete', methods: ["POST"])]
+    public function delete(Request $request, ModelRepository $repository, #[CurrentUser] User $user): Response
+    {
+        $model = $repository->find($request->get('modelId', 0));
+        if (!$model) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        if ($model->getStudent()->getId() !== $user->getId()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        try {
+            $state = AbstractState::getState($model, $this->entityManager);
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ]);
+        }
+        $state->delete();
+
+        $this->entityManager->flush();
+
+        return $this->redirectToRoute('app_index');
+    }
+
 }
