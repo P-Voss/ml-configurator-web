@@ -59,6 +59,11 @@
                 </div>
 
                 <div class="row" v-if="activeTask.state === 'COMPLETED'">
+                    <div class="col-12" v-if="activeTask.data.modelHash !== model.configurationHash">
+                        <button @click.prevent="rollback" class="btn btn-info">
+                            Modellkonfiguration dieses Trainings wiederherstellen
+                        </button>
+                    </div>
                     <div class="col-12">
                         <SvmResult
                             v-if="this.model.type === 'MODEL_TYPE_SVM'"
@@ -197,7 +202,6 @@ export default {
             form.set('taskId', taskId)
             let response = await TrainingService.submitTrainingTask(this.executeTaskUrl, form)
             if (response.data.success) {
-                // this.activeTask.data = {...response.data.data}
                 this.activeTask.state = "COMPLETED"
                 this.state = "INIT"
                 this.stateMessage = ""
@@ -210,7 +214,7 @@ export default {
             const form = new FormData()
             form.set('id', this.model.id)
             let response = await TrainingService.loadTasks(this.loadTasksUrl, form)
-            console.log(response)
+
             if (response.data.success) {
                 this.completedTasks = response.data.completedTasks
                 this.bestTrainingId = response.data.bestTrainingId
@@ -235,6 +239,11 @@ export default {
                 document.querySelectorAll('pre code').forEach((el) => {
                     this.$hljs.initHighlighting()
                 });
+            }
+        },
+        rollback() {
+            if (this.activeTask.id !== this.mostRecentTaskId) {
+                this.$emit("rollback", this.activeTask.id)
             }
         }
     }

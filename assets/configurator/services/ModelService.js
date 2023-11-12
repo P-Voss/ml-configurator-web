@@ -12,3 +12,7 @@ export const updateModel = async (url, formdata) => {
 export const loadModel = async (url, form) => {
     return axios.post(url, form)
 }
+
+export const rollback = async (url, form) => {
+    return axios.post(url, form)
+}

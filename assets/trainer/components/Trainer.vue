@@ -17,45 +17,16 @@
                     role="tabpanel"
                     aria-labelledby="trainer-data-prep"
                 >
-<!--                    <div class="row">-->
-<!--                        <div class="col-12 col-lg-6">-->
-<!--                            <h3>Testdaten hochladen</h3>-->
-<!--                            <form @submit.prevent="uploadData">-->
-<!--                                <div class="mb-3">-->
-<!--                                    <label for="dataFile" class="form-label">Wählen Sie Ihre Datei aus:</label>-->
-<!--                                    <input type="file" class="form-control" id="dataFile" @change="setFile" ref="file" required>-->
-<!--                                </div>-->
-<!--                                <button type="submit" class="btn btn-primary">Upload</button>-->
-<!--                            </form>-->
-<!--                        </div>-->
-<!--                        <div class="col-12 col-lg-6" v-if="uploadComplete">-->
-<!--                            <h3>Datei Informationen</h3>-->
-<!--                            <div>-->
-<!--                                <span class="fw-bold">Dateiname: </span> {{filedata.filename}}-->
-<!--                            </div>-->
-<!--                            <div>-->
-<!--                                <span class="fw-bold">Zeitpunkt Upload: </span> {{filedata.uploadDate}}-->
-<!--                            </div>-->
-<!--                            <div>-->
-<!--                                <span class="fw-bold">Anzahl Einträge: </span> {{filedata.entryCount}}-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-
-
                     <div>
                         <h4>Trainingsdaten</h4>
-
                         <FieldList
                             @toggle-target="toggleTarget"
                             @toggle-ignore="toggleIgnore"
                             @save-configuration="saveConfiguration"
                             :field-configurations="fieldConfigurations"
                         />
-
                     </div>
                 </div>
-
 
                 <div
                     class="tab-pane fade"
@@ -110,6 +81,7 @@
                         :submit-task-url="this.submitTaskUrl"
                         :execute-task-url="this.executeTaskUrl"
                         :load-example-url="this.loadExampleUrl"
+                        @rollback="this.rollback"
                     />
                 </div>
             </div>
@@ -120,7 +92,7 @@
 <script>
 
 import TrainerNavigation from "./Navigation.vue"
-import {loadModel} from "../../configurator/services/ModelService.js"
+import {loadModel, rollback} from "../../configurator/services/ModelService.js"
 import DataService from "../services/DataService.js"
 
 import FieldList from "./DataStep/FieldList.vue";
@@ -160,6 +132,7 @@ export default {
         executeTaskUrl: String,
         loadTasksUrl: String,
         loadExampleUrl: String,
+        rollbackUrl: String,
     },
     data() {
         return {
@@ -175,6 +148,7 @@ export default {
                 architectureType: '',
                 validFieldConfiguration: false,
                 validHyperparameterConfiguration: false,
+                configurationHash: "",
             },
             filedata: {
                 filename: '',
@@ -210,16 +184,10 @@ export default {
                         this.model.type = data.model.type
                         this.model.architectureType = data.model.architectureType
                         this.model.validFieldConfiguration = data.model.validFieldConfiguration
+                        this.model.configurationHash = data.model.configurationHash
 
                         this.fieldConfigurations = data.model.fieldConfigurations
 
-                        // if (data.model.uploadFile) {
-                        //     this.uploadComplete = true
-                        //
-                        //     this.filedata.filename = data.model.uploadFile.filename
-                        //     this.filedata.uploadDate = data.model.uploadFile.uploadDate
-                        //     this.filedata.entryCount = data.model.uploadFile.entryCount
-                        // }
                         if (data.model.hyperparameters) {
                             this.model.hyperparameters = data.model.hyperparameters
                             this.model.validHyperparameterConfiguration = true
@@ -229,32 +197,6 @@ export default {
                     this.modelState = "COMPLETED"
                 })
                 .catch(error => {
-                    console.log(error)
-                })
-        },
-        setFile() {
-            this.file = this.$refs.file.files[0]
-        },
-        async uploadData() {
-            if (!this.file) {
-                alert('Bitte eine Datei auswählen.');
-                return;
-            }
-
-            let form = new FormData()
-            form.set('id', this.model.id)
-            form.append('file', this.file)
-
-            DataService.uploadFile(this.uploadUrl, form)
-                .then(response => {
-                    console.log(response)
-                    if (response.data.success) {
-                        this.uploadComplete = true
-                    }
-                    this.loadModel(this.modelId)
-                })
-                .catch(error => {
-                    console.log("error uploading")
                     console.log(error)
                 })
         },
@@ -298,7 +240,13 @@ export default {
         async saveHyperparameter(form) {
             form.set('id', this.model.id)
             let response = await DataService.saveHyperparameter(this.saveHyperparameterUrl, form)
-            console.log(response)
+            this.loadModel(this.model.id)
+        },
+        async rollback(taskId) {
+            let form = new FormData()
+            form.set('id', this.model.id)
+            form.set('taskId', taskId)
+            let response = await rollback(this.rollbackUrl, form)
             this.loadModel(this.model.id)
         }
     }
