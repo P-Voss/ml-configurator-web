@@ -2,15 +2,12 @@
 
 namespace App\Controller;
 
-use App\Converter\ModelstateToJson;
-use App\Entity\Hyperparameters;
 use App\Entity\Model;
 use App\Entity\User;
 use App\Enum\ModelTypes;
 use App\Repository\ModelRepository;
 use App\Repository\TrainingTaskRepository;
 use App\Service\Dataset;
-use App\Service\FieldConfigurationGenerator;
 use App\Service\KeywordTrait;
 use App\Service\Rollback;
 use App\State\Modeltype\AbstractState;
@@ -29,6 +26,25 @@ class ConfiguratorController extends AbstractController
 
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {}
+
+
+    #[Route('/{_locale<en|de>}/configurator/{id}', name: 'app_configurator', methods: ["GET"])]
+    public function configurator(#[CurrentUser] User $user, int $id = null): Response
+    {
+        $validModelId = false;
+        foreach ($user->getModels() as $model) {
+            if ($model->getId() === $id) {
+                $validModelId = true;
+            }
+        }
+        if (!$validModelId) {
+            $this->redirectToRoute('app_index');
+        }
+
+        return $this->render('index/configurator.html.twig', [
+            'modelId' => $validModelId ? $id : null,
+        ]);
+    }
 
     #[Route('/{_locale<en|de>}/configurator/initialize', name: 'app_configurator_init', methods: ["POST"])]
     public function initialize(Request $request, ModelRepository $repository, #[CurrentUser] User $user, Dataset $datasetService): JsonResponse

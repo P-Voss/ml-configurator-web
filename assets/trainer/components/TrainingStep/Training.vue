@@ -60,7 +60,10 @@
 
                 <div class="row" v-if="activeTask.state === 'COMPLETED'">
                     <div class="col-12" v-if="activeTask.data.modelHash !== model.configurationHash">
-                        <button @click.prevent="rollback" class="btn btn-info">
+                        <button
+                            @click.prevent="rollback" class="btn"
+                            :class="{'btn-primary': activeTask.id*1 === bestTrainingId*1, 'btn-info': activeTask.id*1 !== bestTrainingId*1}"
+                        >
                             Modellkonfiguration dieses Trainings wiederherstellen
                         </button>
                     </div>

@@ -44,23 +44,23 @@ abstract class AbstractState implements StateInterface
             $this->model->removeFieldConfiguration($fieldConfiguration);
             $this->entityManager->remove($fieldConfiguration);
         }
-        if (file_exists($this->model->getModelPath())) {
+        if (file_exists($this->model->getModelPath() ?? '')) {
             unlink($this->model->getModelPath());
         }
-        if (file_exists($this->model->getCheckpointPath())) {
+        if (file_exists($this->model->getCheckpointPath() ?? '')) {
             unlink($this->model->getCheckpointPath());
         }
-        if (file_exists($this->model->getScalerPath())) {
+        if (file_exists($this->model->getScalerPath() ?? '')) {
             unlink($this->model->getScalerPath());
         }
         foreach ($this->model->getTrainingTasks() as $task) {
-            if (file_exists($task->getReportPath())) {
+            if (file_exists($task->getReportPath() ?? '')) {
                 unlink($task->getReportPath());
             }
-            if (file_exists($task->getLogPath())) {
+            if (file_exists($task->getLogPath() ?? '')) {
                 unlink($task->getLogPath());
             }
-            if (file_exists($task->getScriptPath())) {
+            if (file_exists($task->getScriptPath() ?? '')) {
                 unlink($task->getScriptPath());
             }
             $this->model->removeTrainingTask($task);

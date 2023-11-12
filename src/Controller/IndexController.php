@@ -25,7 +25,7 @@ class IndexController extends AbstractController
     #[Route('/', name: 'app_index_no_locale')]
     public function indexNoLocale(): Response
     {
-        return $this->redirectToRoute('app_index', ['_locale' => 'en']);
+        return $this->redirectToRoute('app_index', ['_locale' => 'de']);
     }
 
     #[Route('/{_locale<en|de>}/index', name: 'app_index')]
@@ -71,25 +71,6 @@ class IndexController extends AbstractController
         return new JsonResponse([
             'success' => true,
             'model' => $state,
-        ]);
-    }
-
-
-    #[Route('/{_locale<en|de>}/configurator/{id}', name: 'app_configurator')]
-    public function configurator(#[CurrentUser] User $user, int $id = null): Response
-    {
-        $validModelId = false;
-        foreach ($user->getModels() as $model) {
-            if ($model->getId() === $id) {
-                $validModelId = true;
-            }
-        }
-        if (!$validModelId) {
-            $this->redirectToRoute('app_index');
-        }
-
-        return $this->render('index/configurator.html.twig', [
-            'modelId' => $validModelId ? $id : null,
         ]);
     }
 

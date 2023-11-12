@@ -11,8 +11,6 @@ const app = createApp({
     }
 });
 
-console.log(document.getElementById('body').dataset.locale)
-
 app.mount('#app');
 app.use(createI18n({
     locale: document.getElementById('body').dataset.locale,
