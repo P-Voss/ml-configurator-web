@@ -1,6 +1,5 @@
 <template>
-    <div>
-        <div class="accordion">
+        <div class="accordion" style="width: 100%">
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button
@@ -16,7 +15,7 @@
                 </h2>
                 <div
                     id="taskData"
-                    class="accordion-collapse collapse show"
+                    class="accordion-collapse collapse p-2 show"
                 >
                     <div class="row my-3">
                         <div class="col-8">
@@ -45,46 +44,72 @@
                         aria-expanded="true"
                         aria-controls="result"
                     >
-                        Ergebnis
+                        Ergebnis gegen Validierungsdaten
                     </button>
                 </h2>
                 <div
                     id="result"
-                    class="accordion-collapse collapse show"
+                    class="accordion-collapse collapse p-2"
                 >
-                    <div class="row my-3">
+                    <div class="row gy-3">
                         <div class="col-12 col-lg-6">
                             <span class="fw-bold">Trainingsdauer </span>
                             <span>{{roundedDuration}} Sekunden</span>
                         </div>
                         <div class="col-12 col-lg-6">
                             <span class="fw-bold">Genauigkeit </span>
-                            <span>{{data.result.accuracy}}</span><span v-if="bestTrainingId === data.id"> - Best Result</span>
+                            <span>{{data.result.accuracy_val}}</span><span v-if="bestTrainingId === data.id"> - Best Result</span>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">Klassifizierungs-Report</div>
+                        <div class="col-6" v-for="(entry, key) in data.result.classification_report_val" :key="key">
+                            <div class="card" v-if="['accuracy', 'macro avg', 'weighted avg'].indexOf(key) === -1">
+                                <div class="card-body pb-0">
+                                    <div class="card-title">
+                                        Klasse: {{key}}
+                                    </div>
+                                    <div class="card-text">
+                                        <pre>{{entry}}</pre>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
 
-            <div class="accordion-item">
+            <div class="accordion-item" v-if="data.result.accuracy_test">
                 <h2 class="accordion-header">
                     <button
                         class="accordion-button"
                         type="button"
                         data-bs-toggle="collapse"
-                        data-bs-target="#report"
+                        data-bs-target="#resultTest"
                         aria-expanded="true"
-                        aria-controls="report"
+                        aria-controls="resultTest"
                     >
-                        Klassifizierungs-Report
+                        Ergebnis gegen Testdaten
                     </button>
                 </h2>
                 <div
-                    id="report"
-                    class="accordion-collapse collapse"
+                    id="resultTest"
+                    class="accordion-collapse collapse p-2"
                 >
+                    <div class="row gy-3">
+                        <div class="col-12 col-lg-6">
+                            <span class="fw-bold">Trainingsdauer </span>
+                            <span>{{roundedDuration}} Sekunden</span>
+                        </div>
+                        <div class="col-12 col-lg-6">
+                            <span class="fw-bold">Genauigkeit </span>
+                            <span>{{data.result.accuracy_test}}</span><span v-if="bestTrainingId === data.id"> - Best Result</span>
+                        </div>
+                    </div>
                     <div class="row">
-                        <div class="col-6" v-for="(entry, key) in data.result.classification_report" :key="key">
+                        <div class="col-12">Klassifizierungs-Report</div>
+                        <div class="col-6" v-for="(entry, key) in data.result.classification_report_test" :key="key">
                             <div class="card" v-if="['accuracy', 'macro avg', 'weighted avg'].indexOf(key) === -1">
                                 <div class="card-body pb-0">
                                     <div class="card-title">
@@ -116,7 +141,7 @@
                 </h2>
                 <div
                     id="visual"
-                    class="accordion-collapse collapse"
+                    class="accordion-collapse collapse p-2"
                 >
                     <div class="row">
                         <div class="col-12 imgcontainer" v-if="data.result.tree_plot !== ''">
@@ -138,7 +163,6 @@
                 </div>
             </div>
         </div>
-    </div>
 </template>
 
 <script>

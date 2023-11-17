@@ -53,13 +53,10 @@
 
             <div v-if="state !== 'PENDING'" class="col-12 col-lg-8">
                 <div class="row m-3">
-                    <div class="col-12">
+                    <div class="col-3">
                         <button v-if="state === 'INIT'" class="btn btn-primary" @click="submitTrainingTask">Ausführen</button>
                     </div>
-                </div>
-
-                <div class="row" v-if="activeTask.state === 'COMPLETED'">
-                    <div class="col-12" v-if="activeTask.data.modelHash !== model.configurationHash">
+                    <div class="col-9" v-if="activeTask.state === 'COMPLETED' && activeTask.data.modelHash !== model.configurationHash">
                         <button
                             @click.prevent="rollback" class="btn"
                             :class="{'btn-primary': activeTask.id*1 === bestTrainingId*1, 'btn-info': activeTask.id*1 !== bestTrainingId*1}"
@@ -67,21 +64,44 @@
                             Modellkonfiguration dieses Trainings wiederherstellen
                         </button>
                     </div>
-                    <div class="col-12">
+                </div>
+
+                <div class="row" v-if="activeTask.state === 'COMPLETED'">
+                    <div class="d-none d-lg-flex col-12" style="max-height: 60vh; overflow-x: hidden; overflow-y: scroll;">
                         <SvmResult
-                            v-if="this.model.type === 'MODEL_TYPE_SVM'"
+                            v-if="model.type === 'MODEL_TYPE_SVM'"
                             :data="activeTask.data"
                             :best-training-id="bestTrainingId"
                             :load-example-url="loadExampleUrl"
                         />
                         <FeedforwardResult
-                            v-if="this.model.type === 'MODEL_TYPE_NEUR'"
+                            v-if="model.type === 'MODEL_TYPE_NEUR' || model.type === 'MODEL_TYPE_RNN'"
                             :data="activeTask.data"
                             :best-training-id="bestTrainingId"
                             :load-example-url="loadExampleUrl"
                         />
                         <DecisionTreeResult
-                            v-if="this.model.type === 'MODEL_TYPE_DTREE'"
+                            v-if="model.type === 'MODEL_TYPE_DTREE'"
+                            :data="activeTask.data"
+                            :best-training-id="bestTrainingId"
+                            :load-example-url="loadExampleUrl"
+                        />
+                    </div>
+                    <div class="d-flex d-lg-none col-12">
+                        <SvmResult
+                            v-if="model.type === 'MODEL_TYPE_SVM'"
+                            :data="activeTask.data"
+                            :best-training-id="bestTrainingId"
+                            :load-example-url="loadExampleUrl"
+                        />
+                        <FeedforwardResult
+                            v-if="model.type === 'MODEL_TYPE_NEUR' || model.type === 'MODEL_TYPE_RNN'"
+                            :data="activeTask.data"
+                            :best-training-id="bestTrainingId"
+                            :load-example-url="loadExampleUrl"
+                        />
+                        <DecisionTreeResult
+                            v-if="model.type === 'MODEL_TYPE_DTREE'"
                             :data="activeTask.data"
                             :best-training-id="bestTrainingId"
                             :load-example-url="loadExampleUrl"
