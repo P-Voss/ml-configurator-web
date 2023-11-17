@@ -123,6 +123,10 @@ class DecisionTreeState extends AbstractState
         return new DecisionTree($this->model);
     }
 
+    /**
+     * @return int
+     * @todo prioritize accuracy of test-split over validation-split when available
+     */
     public function getBestTrainingId(): int
     {
         if ($this->model->getTrainingTasks()->count() === 0) {
@@ -138,8 +142,14 @@ class DecisionTreeState extends AbstractState
                 continue;
             }
             $report = json_decode(file_get_contents($task->getReportPath()));
-            if ($report->accuracy > $highestAccuracy) {
-                $highestAccuracy = $report->accuracy;
+            if (!$report) {
+                continue;
+            }
+            if (!isset($report->accuracy_val)) {
+                continue;
+            }
+            if ($report->accuracy_val > $highestAccuracy) {
+                $highestAccuracy = $report->accuracy_val;
                 $bestId = $task->getId();
             }
         }
