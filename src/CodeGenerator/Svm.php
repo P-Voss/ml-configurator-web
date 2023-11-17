@@ -27,7 +27,6 @@ class Svm extends AbstractCodegenerator
         $reportFile = $pathGenerator->getReportFile();
 
         $hyperparameter = $this->model->getHyperparameters();
-        $split = $hyperparameter['testPercentage'] / ($hyperparameter['testPercentage'] + $hyperparameter['validationPercentage']);
 
         $innerLines = [];
 

@@ -16,7 +16,10 @@ class LinearRegression extends AbstractCodegenerator
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
         $targetName = htmlentities($this->getTargetName());
-        $features = array_map('htmlentities', $this->getFeatures());
+
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
+
         if ($targetName === '') {
             throw new \Exception('invalid field configuration');
         }
@@ -25,7 +28,6 @@ class LinearRegression extends AbstractCodegenerator
 
         $hyperparameter = $this->model->getHyperparameters();
         $conf = $this->model->getLinRegConfiguration();
-        $split = $hyperparameter['testPercentage'] / ($hyperparameter['testPercentage'] + $hyperparameter['validationPercentage']);
 
         $innerLines = [];
 
