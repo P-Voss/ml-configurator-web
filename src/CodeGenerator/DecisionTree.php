@@ -18,6 +18,9 @@ class DecisionTree extends AbstractCodegenerator
     {
         $targetName = htmlentities($this->getTargetName());
         $features = array_map('htmlentities', $this->getFeatures());
+
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
         if ($targetName === '') {
             throw new \Exception('invalid field configuration');
         }
@@ -39,11 +42,13 @@ class DecisionTree extends AbstractCodegenerator
         $lines[] = "import json";
         $lines[] = "import pandas as pd";
         $lines[] = "import matplotlib.pyplot as plt";
+        $lines[] = "import numpy as np";
         $lines[] = "from sklearn.metrics import confusion_matrix";
         $lines[] = "from sklearn.tree import plot_tree";
         $lines[] = "from sklearn.tree import DecisionTreeClassifier";
         $lines[] = "from sklearn.metrics import accuracy_score, classification_report";
         $lines[] = "from sklearn.model_selection import train_test_split";
+        $lines[] = "from sklearn.preprocessing import OneHotEncoder";
         $lines[] = "from joblib import dump";
         $lines[] = '';
         $lines[] = '# Logging-Konfiguration';
@@ -73,23 +78,33 @@ class DecisionTree extends AbstractCodegenerator
         );
 
         $innerLines[] = sprintf(
-            'features = data[[%s]]',
-            implode(
-                ', ',
-                array_map(function (string $name) {
-                    return '"' . $name . '"';
-                }, $features)
-            )
+            'text_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
         );
-        $innerLines[] = 'train_size = ' . $hyperparameter['trainingPercentage'] / 100;
-        $innerLines[] = 'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=1-train_size)';
-        if ($split > 0) {
+        $innerLines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+        $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
+        $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
+
+        $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features], axis=1)';
+        $innerLines[] = '';
+        if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = sprintf(
-                'features_val, _, target_val, _ = train_test_split(features_temp, target_temp, test_size=%s)',
-                $split
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
+            $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
+            $innerLines[] = sprintf(
+                'features_val, features_test, target_val, target_test = train_test_split(features_temp, target_temp, test_size=%s, random_state=42)',
+                $testPercentage
             );
         } else {
-            $innerLines[] = 'features_val, target_val = features_temp, target_temp';
+            $innerLines[] = sprintf(
+                'features_train, features_val, target_train, target_val = train_test_split(features, target, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
         }
 
         $innerLines[] = '';
@@ -104,41 +119,53 @@ class DecisionTree extends AbstractCodegenerator
             $hyperparameter['splitter']
         );
         $innerLines[] = 'dtree.fit(features_train, target_train)';
+        $innerLines[] = 'end_time = time.time()';
 
         $innerLines[] = '';
-        $innerLines[] = '# results and metrics';
-        $innerLines[] = 'end_time = time.time()';
-        $innerLines[] = 'target_pred = dtree.predict(features_val)';
-        $innerLines[] = 'accuracy = accuracy_score(target_val, target_pred)';
-        $innerLines[] = 'conf_matrix = confusion_matrix(target_val, target_pred)';
-        $innerLines[] = 'class_report = classification_report(target_val, target_pred, output_dict=True)';
-
-        if ($split > 0) {
-            /**
-             * @todo add additional testrun when splitting testset
-             * target_pred_test = dtree.predict(features_test)
-             * accuracy_test = accuracy_score(target_test, target_pred_test)
-             * conf_matrix_test = confusion_matrix(target_test, target_pred_test)
-             * class_report_test = classification_report(target_test, target_pred_test)
-             */
-        }
+        $innerLines[] = '# results and metrics for validation';
+        $innerLines[] = 'target_pred_val = dtree.predict(features_val)';
+        $innerLines[] = 'accuracy_val = accuracy_score(target_val, target_pred_val)';
+        $innerLines[] = 'confusion_matrix_val = confusion_matrix(target_val, target_pred_val)';
+        $innerLines[] = 'classification_report_val = classification_report(target_val, target_pred_val, output_dict=True)';
 
         $innerLines[] = '';
         $innerLines[] = '# Visualisierung';
+        $innerLines[] = 'number_feature_names = number_features.columns.tolist()';
+        $innerLines[] = 'text_feature_names = encoder.get_feature_names(text_features.columns).tolist()';
+        $innerLines[] = 'feature_names = text_feature_names + number_feature_names';
+
+        $innerLines[] = '';
         $innerLines[] = 'plt.figure(figsize=(20,10))';
-        $innerLines[] = 'plot_tree(dtree, filled=True, feature_names=features.columns, class_names=target.unique().astype(str), proportion=True)';
+        $innerLines[] = 'plot_tree(dtree, filled=True, feature_names=feature_names, class_names=target.unique().astype(str), proportion=True)';
         $innerLines[] = 'tree_plot = plot_to_base64(plt)';
         $innerLines[] = 'plt.close()';
 
         $innerLines[] = '';
         $innerLines[] = '# logging the result';
         $innerLines[] = 'results = {';
-        $innerLines[] = '    "accuracy": accuracy,';
-        $innerLines[] = '    "confusion_matrix": conf_matrix.tolist(),';
-        $innerLines[] = '    "classification_report": class_report,';
+        $innerLines[] = '    "accuracy_val": accuracy_val,';
+        $innerLines[] = '    "accuracy_test": 0,';
+        $innerLines[] = '    "confusion_matrix_val": confusion_matrix_val.tolist(),';
+        $innerLines[] = '    "confusion_matrix_test": np.zeros((2, 2)).tolist(),';
+        $innerLines[] = '    "classification_report_val": classification_report_val,';
+        $innerLines[] = '    "classification_report_test": {},';
         $innerLines[] = '    "tree_plot": tree_plot,';
         $innerLines[] = '    "duration": end_time - start_time';
         $innerLines[] = '}';
+
+        if ((int) $hyperparameter['testPercentage'] > 0) {
+            $innerLines[] = '';
+            $innerLines[] = '# results and metrics for tests';
+            $innerLines[] = 'target_pred_test = dtree.predict(features_test)';
+            $innerLines[] = 'accuracy_test = accuracy_score(target_test, target_pred_test)';
+            $innerLines[] = 'confusion_matrix_test = confusion_matrix(target_test, target_pred_test)';
+            $innerLines[] = 'classification_report_test = classification_report(target_test, target_pred_test, output_dict=True)';
+            $innerLines[] = '';
+            $innerLines[] = 'results["accuracy_test"] = accuracy_test';
+            $innerLines[] = 'results["confusion_matrix_test"] = confusion_matrix_test.tolist()';
+            $innerLines[] = 'results["classification_report_test"] = classification_report_test';
+        }
+
         $innerLines[] = sprintf('with open("%s", "w") as outfile:', $pathGenerator->getReportFile());
         $innerLines[] = '    json.dump(results, outfile, indent=4)';
 
@@ -182,6 +209,7 @@ class DecisionTree extends AbstractCodegenerator
         $lines[] = "import json";
         $lines[] = "import pandas as pd";
         $lines[] = "import matplotlib.pyplot as plt";
+        $lines[] = "import numpy as np";
         $lines[] = "from sklearn.metrics import confusion_matrix";
         $lines[] = "from sklearn.tree import plot_tree";
         $lines[] = "from sklearn.tree import DecisionTreeClassifier";

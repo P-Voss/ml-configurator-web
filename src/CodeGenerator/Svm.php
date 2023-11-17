@@ -17,7 +17,9 @@ class Svm extends AbstractCodegenerator
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
         $targetName = htmlentities($this->getTargetName());
-        $features = array_map('htmlentities', $this->getFeatures());
+
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
         if ($targetName === '') {
             throw new \Exception('invalid field configuration');
         }
@@ -41,11 +43,14 @@ class Svm extends AbstractCodegenerator
         $lines[] = "import json";
         $lines[] = "import pandas as pd";
         $lines[] = "import matplotlib.pyplot as plt";
+        $lines[] = "import numpy as np";
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from sklearn.svm import SVR";
         $lines[] = "from sklearn.metrics import mean_squared_error";
         $lines[] = "from sklearn.inspection import permutation_importance";
         $lines[] = "from joblib import dump";
+        $lines[] = "from sklearn.preprocessing import StandardScaler";
+        $lines[] = "from sklearn.preprocessing import OneHotEncoder";
         $lines[] = '';
         $lines[] = '# Logging-Konfiguration';
         $lines[] = sprintf(
@@ -74,23 +79,38 @@ class Svm extends AbstractCodegenerator
         );
 
         $innerLines[] = sprintf(
-            'features = data[[%s]]',
-            implode(
-                ', ',
-                array_map(function (string $name) {
-                    return '"' . $name . '"';
-                }, $features)
-            )
+            'text_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
         );
-        $innerLines[] = 'train_size = ' . $hyperparameter['trainingPercentage'] / 100;
-        $innerLines[] = 'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=1-train_size)';
-        if ($split > 0) {
+        $innerLines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+        $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
+        $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
+        $innerLines[] = 'scaler = StandardScaler()';
+        $innerLines[] = 'number_features_scaled = scaler.fit_transform(number_features)';
+        $innerLines[] = sprintf(
+            "dump(scaler, '%s')",
+            $pathGenerator->getScalerFile('pkl')
+        );
+        $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features_scaled], axis=1)';
+        $innerLines[] = '';
+        if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = sprintf(
-                'features_val, _, target_val, _ = train_test_split(features_temp, target_temp, test_size=%s)',
-                $split
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
+            $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
+            $innerLines[] = sprintf(
+                'features_val, features_test, target_val, target_test = train_test_split(features_temp, target_temp, test_size=%s, random_state=42)',
+                $testPercentage
             );
         } else {
-            $innerLines[] = 'features_val, target_val = features_temp, target_temp';
+            $innerLines[] = sprintf(
+                'features_train, features_val, target_train, target_val = train_test_split(features, target, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
         }
 
         $innerLines[] = '';
@@ -152,12 +172,46 @@ class Svm extends AbstractCodegenerator
         $innerLines[] = '';
         $innerLines[] = '# logging the result';
         $innerLines[] = 'results = {';
-        $innerLines[] = '    "mse": mse,';
-        $innerLines[] = '    "scatterplot": scatterplot,';
-        $innerLines[] = '    "residuals": residuals_plot,';
+        $innerLines[] = '    "mse_val": mse,';
+        $innerLines[] = '    "scatterplot_val": scatterplot,';
+        $innerLines[] = '    "residuals_val": residuals_plot,';
+        $innerLines[] = '    "mse_test": 0,';
+        $innerLines[] = '    "scatterplot_test": "",';
+        $innerLines[] = '    "residuals_test": "",';
         $innerLines[] = '    "feature_importance": feature_importance_dict,';
         $innerLines[] = '    "duration": end_time - start_time';
         $innerLines[] = '}';
+
+        if ((int) $hyperparameter['testPercentage'] > 0) {
+            $innerLines[] = '';
+            $innerLines[] = '# runs prediction against testdata';
+            $innerLines[] = 'test_pred = svm_model.predict(features_test)';
+            $innerLines[] = 'mse_test = mean_squared_error(target_test, test_pred)';
+            $innerLines[] = '';
+            $innerLines[] = '# Scatterplot';
+            $innerLines[] = 'plt.scatter(target_test, test_pred)';
+            $innerLines[] = 'plt.xlabel("Tatsächliche Werte")';
+            $innerLines[] = 'plt.ylabel("Vorhersagen")';
+            $innerLines[] = 'plt.title("Vorhersage vs. Tatsächliche Werte")';
+            $innerLines[] = 'scatterplot_test = plot_to_base64()';
+            $innerLines[] = 'plt.close()';
+
+            $innerLines[] = '';
+            $innerLines[] = '# Residual Plot';
+            $innerLines[] = 'residuals_test = target_test - test_pred';
+            $innerLines[] = 'plt.scatter(test_pred, residuals_test)';
+            $innerLines[] = 'plt.xlabel("Vorhersagen")';
+            $innerLines[] = 'plt.ylabel("Residuen")';
+            $innerLines[] = 'plt.title("Residual Plot")';
+            $innerLines[] = 'plt.axhline(y=0, color="r", linestyle="--")';
+            $innerLines[] = 'residuals_test = plot_to_base64()';
+            $innerLines[] = 'plt.close()';
+            $innerLines[] = '';
+            $innerLines[] = 'results["mse_test"] = mse_test';
+            $innerLines[] = 'results["scatterplot_test"] = scatterplot_test';
+            $innerLines[] = 'results["residuals_test"] = residuals_test';
+        }
+
         $innerLines[] = sprintf('with open("%s", "w") as outfile:', $reportFile);
         $innerLines[] = '    json.dump(results, outfile, indent=4)';
 
@@ -196,6 +250,7 @@ class Svm extends AbstractCodegenerator
         $lines[] = "import json";
         $lines[] = "import pandas as pd";
         $lines[] = "import matplotlib.pyplot as plt";
+        $lines[] = "import numpy as np";
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from sklearn.svm import SVR";
         $lines[] = "from sklearn.metrics import mean_squared_error";

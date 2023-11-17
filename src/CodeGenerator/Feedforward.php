@@ -16,7 +16,10 @@ class Feedforward extends AbstractCodegenerator
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
         $targetName = htmlentities($this->getTargetName());
-        $features = array_map('htmlentities', $this->getFeatures());
+
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
+
         if ($targetName === '') {
             throw new \Exception('invalid field configuration');
         }
@@ -44,8 +47,10 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = "from tensorflow.keras.callbacks import ModelCheckpoint";
         $lines[] = "from tensorflow.keras.callbacks import CSVLogger";
         $lines[] = "from sklearn.preprocessing import StandardScaler";
+        $lines[] = "from sklearn.preprocessing import OneHotEncoder";
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from tensorflow.keras.callbacks import EarlyStopping";
+        $lines[] = "from joblib import dump";
 
         $lines[] = '';
         $lines[] = 'def plot_to_base64(plt):';
@@ -113,25 +118,37 @@ class Feedforward extends AbstractCodegenerator
         );
 
         $innerLines[] = sprintf(
-            'features = data[[%s]]',
-            implode(
-                ', ',
-                array_map(function (string $name) {
-                    return '"' . $name . '"';
-                }, $features)
-            )
+            'text_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
         );
-
-        $innerLines[] = '';
         $innerLines[] = sprintf(
-            'features_train, features_test, target_train, target_test = train_test_split(features, target, test_size=%s, random_state=42)',
-            1 - ($hyperparameter['trainingPercentage'] / 100)
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
         );
+        $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
+        $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
+        $innerLines[] = 'scaler = StandardScaler()';
+        $innerLines[] = 'number_features_scaled = scaler.fit_transform(number_features)';
+        $innerLines[] = sprintf(
+            "dump(scaler, '%s')",
+            $pathGenerator->getScalerFile('pkl')
+        );
+        $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features_scaled], axis=1)';
+        $innerLines[] = '';
         if ((int) $hyperparameter['testPercentage'] > 0) {
-            $split = $hyperparameter['testPercentage'] / ($hyperparameter['testPercentage'] + $hyperparameter['validationPercentage']);
             $innerLines[] = sprintf(
-                'features_train, x_val, target_train, y_val = train_test_split(features_train, target_train, test_size=%s, random_state=42)',
-                $split
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
+            $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
+            $innerLines[] = sprintf(
+                'features_val, features_test, target_val, target_test = train_test_split(features_temp, target_temp, test_size=%s, random_state=42)',
+                $testPercentage
+            );
+        } else {
+            $innerLines[] = sprintf(
+                'features_train, features_val, target_train, target_val = train_test_split(features, target, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
             );
         }
 
@@ -175,15 +192,15 @@ class Feedforward extends AbstractCodegenerator
 
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            "history = model.fit(features_train, target_train, validation_data = (features_test, target_test), epochs = %s, batch_size = %s, verbose = 2, callbacks = [checkpoint, csv_logger %s])",
+            "history = model.fit(features_train, target_train, validation_data = (features_val, target_val), epochs = %s, batch_size = %s, verbose = 2, callbacks = [checkpoint, csv_logger %s])",
             $hyperparameter['epochs'],
             $hyperparameter['batchSize'],
             $hyperparameter['patience'] > 0 ? ', early_stop' : '',
         );
 
         $innerLines[] = '';
-        $innerLines[] = 'loss = model.evaluate(features_test, target_test)';
-        $innerLines[] = 'predictions = model.predict(features_test)';
+        $innerLines[] = 'loss = model.evaluate(features_val, target_val)';
+        $innerLines[] = 'predictions = model.predict(features_val)';
         $innerLines[] = 'r2 = r2_score(target_test, predictions)';
         $innerLines[] = '';
         $innerLines[] = 'end_time = time.time()';
@@ -194,14 +211,29 @@ class Feedforward extends AbstractCodegenerator
         $innerLines[] = '# logging the result';
         $innerLines[] = 'results = {';
         $innerLines[] = '    "loss": loss,';
-        $innerLines[] = '    "r2_score": r2,';
+        $innerLines[] = '    "r2_score_val": r2,';
+        $innerLines[] = '    "scatterplot_val": plot_predictions_vs_actuals(features_val, target_val, predictions),';
         $innerLines[] = '    "epochs_completed": len(history.history["loss"]),';
-        $innerLines[] = '    "stopped_epoch": early_stop.stopped_epoch,';
-        $innerLines[] = '    "best_val_loss": min(history.history["val_loss"]) if early_stop.stopped_epoch else history.history["val_loss"][-1],';
-        $innerLines[] = '    "scatterplot": plot_predictions_vs_actuals(features_test, target_test, predictions),';
         $innerLines[] = '    "learning_curves": plot_learning_curves(history),';
         $innerLines[] = '    "duration": end_time - start_time';
         $innerLines[] = '}';
+
+        if ($hyperparameter['patience'] > 0) {
+            $innerLines[] = 'results["stopped_epoch"] = early_stop.stopped_epoch';
+            $innerLines[] = 'results["best_val_loss"] = min(history.history["val_loss"]) if early_stop.stopped_epoch else history.history["val_loss"][-1]';
+        } else {
+            $innerLines[] = 'results["stopped_epoch"] = 0';
+            $innerLines[] = 'results["best_val_loss"] = min(history.history["val_loss"])';
+        }
+
+        if ((int) $hyperparameter['testPercentage'] > 0) {
+            $innerLines[] = 'predictions_test = model.predict(features_test)';
+            $innerLines[] = 'results["scatterplot_test"] = plot_predictions_vs_actuals(features_test, target_test, predictions_test)';
+            $innerLines[] = 'results["r2_score_test"] = r2_score(target_test, predictions_test)';
+        } else {
+            $innerLines[] = 'results["scatterplot_test"] = ""';
+            $innerLines[] = 'results["r2_score_test"] = 0';
+        }
         $innerLines[] = sprintf('with open("%s", "w") as outfile:', $pathGenerator->getReportFile());
         $innerLines[] = '    json.dump(results, outfile, indent=4)';
 
@@ -230,7 +262,9 @@ class Feedforward extends AbstractCodegenerator
     public function getExampleScript(): string
     {
         $targetName = htmlentities($this->getTargetName());
-        $features = array_map('htmlentities', $this->getFeatures());
+
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
         if ($targetName === '') {
             throw new \Exception('invalid field configuration');
         }
@@ -248,6 +282,7 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = "from tensorflow.keras.callbacks import ModelCheckpoint";
         $lines[] = "from tensorflow.keras.callbacks import CSVLogger";
         $lines[] = "from sklearn.preprocessing import StandardScaler";
+        $lines[] = "from sklearn.preprocessing import OneHotEncoder";
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from tensorflow.keras.callbacks import EarlyStopping";
         $lines[] = '';
@@ -270,25 +305,35 @@ class Feedforward extends AbstractCodegenerator
         );
 
         $innerLines[] = sprintf(
-            'features = data[[%s]]',
-            implode(
-                ', ',
-                array_map(function (string $name) {
-                    return '"' . $name . '"';
-                }, $features)
-            )
+            'text_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
         );
+        $innerLines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+        $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
+        $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
+        $innerLines[] = 'scaler = StandardScaler()';
+        $innerLines[] = 'number_features_scaled = scaler.fit_transform(number_features)';
+        $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features_scaled], axis=1)';
+        $innerLines[] = "dump(scaler, '__SCALER_FILE__')";
 
         $innerLines[] = '';
-        $innerLines[] = sprintf(
-            'features_train, features_test, target_train, target_test = train_test_split(features, target, test_size=%s, random_state=42)',
-            1 - ($hyperparameter['trainingPercentage'] / 100)
-        );
         if ((int) $hyperparameter['testPercentage'] > 0) {
-            $split = $hyperparameter['testPercentage'] / ($hyperparameter['testPercentage'] + $hyperparameter['validationPercentage']);
             $innerLines[] = sprintf(
-                'features_train, x_val, target_train, y_val = train_test_split(features_train, target_train, test_size=%s, random_state=42)',
-                $split
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
+            $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
+            $innerLines[] = sprintf(
+                'features_val, features_test, target_val, target_test = train_test_split(features_temp, target_temp, test_size=%s, random_state=42)',
+                $testPercentage
+            );
+        } else {
+            $innerLines[] = sprintf(
+                'features_train, features_val, target_train, target_val = train_test_split(features, target, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
             );
         }
 
@@ -324,14 +369,14 @@ class Feedforward extends AbstractCodegenerator
 
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            "history = model.fit(features_train, target_train, validation_data = (features_test, target_test), epochs = %s, batch_size = %s, verbose = 1, callbacks = [csv_logger %s])",
+            "history = model.fit(features_train, target_train, validation_data = (features_val, target_val), epochs = %s, batch_size = %s, verbose = 1, callbacks = [csv_logger %s])",
             $hyperparameter['epochs'],
             $hyperparameter['batchSize'],
             $hyperparameter['patience'] > 0 ? ', early_stop' : '',
         );
 
         $innerLines[] = '';
-        $innerLines[] = 'loss = model.evaluate(features_test, target_test)';
+        $innerLines[] = 'loss = model.evaluate(features_val, target_val)';
 
 
         $formattedInnerLines = array_map(function (string $line) {

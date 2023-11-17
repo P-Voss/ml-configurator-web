@@ -16,7 +16,9 @@ class Rnn extends AbstractCodegenerator
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
         $targetName = htmlentities($this->getTargetName());
-        $features = array_map('htmlentities', $this->getFeatures());
+
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
         if ($targetName === '') {
             throw new \Exception('invalid field configuration');
         }
@@ -43,6 +45,7 @@ class Rnn extends AbstractCodegenerator
         $lines[] = "from tensorflow.keras.layers import GRU, LSTM, Dropout, Dense";
         $lines[] = "from tensorflow.keras.callbacks import ModelCheckpoint";
         $lines[] = "from sklearn.preprocessing import StandardScaler";
+        $lines[] = "from sklearn.preprocessing import OneHotEncoder";
         $lines[] = "from tensorflow.keras.callbacks import CSVLogger";
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from tensorflow.keras.callbacks import EarlyStopping";
@@ -114,20 +117,23 @@ class Rnn extends AbstractCodegenerator
         );
 
         $innerLines[] = sprintf(
-            'features = data[[%s]]',
-            implode(
-                ', ',
-                array_map(function (string $name) {
-                    return '"' . $name . '"';
-                }, $features)
-            )
+            'text_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
         );
-        $innerLines[] = "scaler = StandardScaler()";
-        $innerLines[] = "features = scaler.fit_transform(features)";
+        $innerLines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+        $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
+        $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
+        $innerLines[] = 'scaler = StandardScaler()';
+        $innerLines[] = 'number_features_scaled = scaler.fit_transform(number_features)';
         $innerLines[] = sprintf(
             "dump(scaler, '%s')",
             $pathGenerator->getScalerFile('pkl')
         );
+        $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features_scaled], axis=1)';
+        $innerLines[] = '';
         $innerLines[] = "features = np.reshape(features, (features.shape[0], 1, features.shape[1]))";
 
         if ((int) $hyperparameter['testPercentage'] > 0) {
@@ -142,7 +148,7 @@ class Rnn extends AbstractCodegenerator
             );
         } else {
             $innerLines[] = sprintf(
-                'features_train, features_val, target_train, target_val = train_test_split(features, target_train, test_size=%s, random_state=42)',
+                'features_train, features_val, target_train, target_val = train_test_split(features, target, test_size=%s, random_state=42)',
                 1 - ($hyperparameter['trainingPercentage'] / 100)
             );
         }
@@ -179,7 +185,7 @@ class Rnn extends AbstractCodegenerator
 
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            "history = model.fit(features_train, target_train, validation_data = (features_test, target_test), epochs = %s, batch_size = %s, verbose = 1, callbacks = [%s])",
+            "history = model.fit(features_train, target_train, validation_data = (features_val, target_val), epochs = %s, batch_size = %s, verbose = 1, callbacks = [%s])",
             $hyperparameter['epochs'],
             $hyperparameter['batchSize'],
             $hyperparameter['patience'] > 0 ? 'early_stop' : '',
@@ -205,17 +211,20 @@ class Rnn extends AbstractCodegenerator
         $innerLines[] = '}';
 
         if ($hyperparameter['patience'] > 0) {
-            $innerLines[] = 'results["stopped_epoch"] = early_stop.stopped_epoch,';
-            $innerLines[] = 'results["best_val_loss"] = min(history.history["val_loss"]) if early_stop.stopped_epoch else history.history["val_loss"][-1],';
+            $innerLines[] = 'results["stopped_epoch"] = early_stop.stopped_epoch';
+            $innerLines[] = 'results["best_val_loss"] = min(history.history["val_loss"]) if early_stop.stopped_epoch else history.history["val_loss"][-1]';
         } else {
-            $innerLines[] = 'results["stopped_epoch"] = 0,';
-            $innerLines[] = 'results["best_val_loss"] = min(history.history["val_loss"]),';
+            $innerLines[] = 'results["stopped_epoch"] = 0';
+            $innerLines[] = 'results["best_val_loss"] = min(history.history["val_loss"])';
         }
 
         if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = 'predictions_test = model.predict(features_test)';
-            $innerLines[] = 'results["scatterplot_test"] = plot_predictions_vs_actuals(features_test, target_test, predictions_test),';
-            $innerLines[] = 'results["r2_score_test"] = r2_score(target_test, predictions_test),';
+            $innerLines[] = 'results["scatterplot_test"] = plot_predictions_vs_actuals(features_test, target_test, predictions_test)';
+            $innerLines[] = 'results["r2_score_test"] = r2_score(target_test, predictions_test)';
+        } else {
+            $innerLines[] = 'results["scatterplot_test"] = ""';
+            $innerLines[] = 'results["r2_score_test"] = 0';
         }
 
         $innerLines[] = sprintf('with open("%s", "w") as outfile:', $pathGenerator->getReportFile());
@@ -281,7 +290,9 @@ class Rnn extends AbstractCodegenerator
     public function getExampleScript(): string
     {
         $targetName = htmlentities($this->getTargetName());
-        $features = array_map('htmlentities', $this->getFeatures());
+
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
         if ($targetName === '') {
             throw new \Exception('invalid field configuration');
         }
@@ -303,6 +314,7 @@ class Rnn extends AbstractCodegenerator
         $lines[] = "from tensorflow.keras.layers import GRU, LSTM, Dropout, Dense";
         $lines[] = "from tensorflow.keras.callbacks import ModelCheckpoint";
         $lines[] = "from sklearn.preprocessing import StandardScaler";
+        $lines[] = "from sklearn.preprocessing import OneHotEncoder";
         $lines[] = "from tensorflow.keras.callbacks import CSVLogger";
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from tensorflow.keras.callbacks import EarlyStopping";
@@ -358,17 +370,21 @@ class Rnn extends AbstractCodegenerator
         $innerLines[] = sprintf('target = data["%s"]', $targetName);
 
         $innerLines[] = sprintf(
-            'features = data[[%s]]',
-            implode(
-                ', ',
-                array_map(function (string $name) {
-                    return '"' . $name . '"';
-                }, $features)
-            )
+            'text_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
         );
-        $innerLines[] = "scaler = StandardScaler()";
-        $innerLines[] = "features = scaler.fit_transform(features)";
+        $innerLines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+        $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
+        $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
+        $innerLines[] = 'scaler = StandardScaler()';
+        $innerLines[] = 'number_features_scaled = scaler.fit_transform(number_features)';
+        $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features_scaled], axis=1)';
         $innerLines[] = "dump(scaler, '__SCALER_FILE__')";
+
+        $innerLines[] = '';
         $innerLines[] = "features = np.reshape(features, (features.shape[0], 1, features.shape[1]))";
 
         if ((int) $hyperparameter['testPercentage'] > 0) {
@@ -420,7 +436,7 @@ class Rnn extends AbstractCodegenerator
 
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            "history = model.fit(features_train, target_train, validation_data = (features_test, target_test), epochs = %s, batch_size = %s, verbose = 1, callbacks = [%s])",
+            "history = model.fit(features_train, target_train, validation_data = (features_val, target_val), epochs = %s, batch_size = %s, verbose = 1, callbacks = [%s])",
             $hyperparameter['epochs'],
             $hyperparameter['batchSize'],
             $hyperparameter['patience'] > 0 ? 'early_stop' : '',

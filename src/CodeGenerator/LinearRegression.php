@@ -41,12 +41,15 @@ class LinearRegression extends AbstractCodegenerator
         $lines[] = "import json";
         $lines[] = "import pandas as pd";
         $lines[] = "import matplotlib.pyplot as plt";
+        $lines[] = "import numpy as np";
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from sklearn.linear_model import Lasso";
         $lines[] = "from sklearn.linear_model import LinearRegression";
         $lines[] = "from sklearn.linear_model import Ridge";
         $lines[] = "from sklearn.metrics import mean_squared_error, r2_score";
         $lines[] = "from joblib import dump";
+        $lines[] = "from sklearn.preprocessing import StandardScaler";
+        $lines[] = "from sklearn.preprocessing import OneHotEncoder";
         $lines[] = '';
         $lines[] = '# Logging-Konfiguration';
         $lines[] = sprintf(
@@ -75,23 +78,33 @@ class LinearRegression extends AbstractCodegenerator
         );
 
         $innerLines[] = sprintf(
-            'features = data[[%s]]',
-            implode(
-                ', ',
-                array_map(function (string $name) {
-                    return '"' . $name . '"';
-                }, $features)
-            )
+            'text_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
         );
-        $innerLines[] = 'train_size = ' . $hyperparameter['trainingPercentage'] / 100;
-        $innerLines[] = 'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=1-train_size)';
-        if ($split > 0) {
+        $innerLines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+        $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
+        $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
+
+        $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features], axis=1)';
+        $innerLines[] = '';
+        if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = sprintf(
-                'features_val, features_test, target_val, target_test  = train_test_split(features_temp, target_temp, test_size=%s)',
-                $split
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
+            $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
+            $innerLines[] = sprintf(
+                'features_val, features_test, target_val, target_test = train_test_split(features_temp, target_temp, test_size=%s, random_state=42)',
+                $testPercentage
             );
         } else {
-            $innerLines[] = 'features_val, target_val = features_temp, target_temp';
+            $innerLines[] = sprintf(
+                'features_train, features_val, target_train, target_val = train_test_split(features, target, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
         }
 
         $innerLines[] = '';
@@ -119,29 +132,23 @@ class LinearRegression extends AbstractCodegenerator
         $innerLines[] = 'model.fit(features_train, target_train)';
 
         $innerLines[] = '';
+        $innerLines[] = 'end_time = time.time()';
+
+        $innerLines[] = '';
         $innerLines[] = '# gather validation data';
         $innerLines[] = 'target_pred_val = model.predict(features_val)';
         $innerLines[] = 'mse_val = mean_squared_error(target_val, target_pred_val)';
         $innerLines[] = 'r2_val = r2_score(target_val, target_pred_val)';
 
         $innerLines[] = '';
-        $innerLines[] = '# gather performance data';
-        $innerLines[] = 'target_pred_test = model.predict(features_test)';
-        $innerLines[] = 'mse_test = mean_squared_error(target_test, target_pred_test)';
-        $innerLines[] = 'r2_test = r2_score(target_test, target_pred_test)';
-
-        $innerLines[] = '';
-        $innerLines[] = 'end_time = time.time()';
-
-        $innerLines[] = '';
         $innerLines[] = '# generating plot';
-        $innerLines[] = 'plt.scatter(target_test, target_pred_test)';
+        $innerLines[] = 'plt.scatter(target_val, target_pred_val)';
         $innerLines[] = 'plt.xlabel("True Values")';
         $innerLines[] = 'plt.ylabel("Predictions")';
         $innerLines[] = 'plt.axis("equal")';
         $innerLines[] = 'plt.axis("square")';
         $innerLines[] = 'plt.plot([-100, 100], [-100, 100])';
-        $innerLines[] = 'scatterplot = plot_to_base64(plt)';
+        $innerLines[] = 'scatterplot_val = plot_to_base64(plt)';
         $innerLines[] = 'plt.close()';
 
         $innerLines[] = '# saving model';
@@ -150,12 +157,37 @@ class LinearRegression extends AbstractCodegenerator
         $innerLines[] = '# logging';
         $innerLines[] = 'results = {';
         $innerLines[] = '    "mse_val": mse_val,';
-        $innerLines[] = '    "mse_test": mse_test,';
+        $innerLines[] = '    "mse_test": 0,';
         $innerLines[] = '    "r2_val": r2_val,';
-        $innerLines[] = '    "r2_test": r2_test,';
-        $innerLines[] = '    "scatterplot": scatterplot,';
+        $innerLines[] = '    "r2_test": 0,';
+        $innerLines[] = '    "scatterplot_val": scatterplot_val,';
+        $innerLines[] = '    "scatterplot_test": "",';
         $innerLines[] = '    "duration": end_time - start_time';
         $innerLines[] = '}';
+
+        if ((int) $hyperparameter['testPercentage'] > 0) {
+            $innerLines[] = '';
+            $innerLines[] = '# gather performance data';
+            $innerLines[] = 'target_pred_test = model.predict(features_test)';
+            $innerLines[] = 'mse_test = mean_squared_error(target_test, target_pred_test)';
+            $innerLines[] = 'r2_test = r2_score(target_test, target_pred_test)';
+
+            $innerLines[] = '';
+            $innerLines[] = '# generating plot';
+            $innerLines[] = 'plt.scatter(target_test, target_pred_test)';
+            $innerLines[] = 'plt.xlabel("True Values")';
+            $innerLines[] = 'plt.ylabel("Predictions")';
+            $innerLines[] = 'plt.axis("equal")';
+            $innerLines[] = 'plt.axis("square")';
+            $innerLines[] = 'plt.plot([-100, 100], [-100, 100])';
+            $innerLines[] = 'scatterplot_test = plot_to_base64(plt)';
+            $innerLines[] = 'plt.close()';
+
+            $innerLines[] = 'results["mse_test"] = mse_test';
+            $innerLines[] = 'results["r2_test"] = r2_test';
+            $innerLines[] = 'results["scatterplot_test"] = scatterplot_test';
+        }
+
         $innerLines[] = sprintf('with open("%s", "w") as outfile:', $reportFile);
         $innerLines[] = '    json.dump(results, outfile, indent=4)';
 
@@ -196,6 +228,7 @@ class LinearRegression extends AbstractCodegenerator
         $lines[] = "import json";
         $lines[] = "import pandas as pd";
         $lines[] = "import matplotlib.pyplot as plt";
+        $lines[] = "import numpy as np";
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from sklearn.linear_model import Lasso";
         $lines[] = "from sklearn.linear_model import LinearRegression";
@@ -268,29 +301,23 @@ class LinearRegression extends AbstractCodegenerator
         $innerLines[] = 'model.fit(features_train, target_train)';
 
         $innerLines[] = '';
+        $innerLines[] = 'end_time = time.time()';
+
+        $innerLines[] = '';
         $innerLines[] = '# gather validation data';
         $innerLines[] = 'target_pred_val = model.predict(features_val)';
         $innerLines[] = 'mse_val = mean_squared_error(target_val, target_pred_val)';
         $innerLines[] = 'r2_val = r2_score(target_val, target_pred_val)';
 
         $innerLines[] = '';
-        $innerLines[] = '# gather performance data';
-        $innerLines[] = 'target_pred_test = model.predict(features_test)';
-        $innerLines[] = 'mse_test = mean_squared_error(target_test, target_pred_test)';
-        $innerLines[] = 'r2_test = r2_score(target_test, target_pred_test)';
-
-        $innerLines[] = '';
-        $innerLines[] = 'end_time = time.time()';
-
-        $innerLines[] = '';
         $innerLines[] = '# generating plot';
-        $innerLines[] = 'plt.scatter(target_test, target_pred_test)';
+        $innerLines[] = 'plt.scatter(target_val, target_pred_val)';
         $innerLines[] = 'plt.xlabel("True Values")';
         $innerLines[] = 'plt.ylabel("Predictions")';
         $innerLines[] = 'plt.axis("equal")';
         $innerLines[] = 'plt.axis("square")';
         $innerLines[] = 'plt.plot([-100, 100], [-100, 100])';
-        $innerLines[] = 'scatterplot = plot_to_base64(plt)';
+        $innerLines[] = 'scatterplot_val = plot_to_base64(plt)';
         $innerLines[] = 'plt.close()';
 
         $innerLines[] = '# saving model';
@@ -299,12 +326,39 @@ class LinearRegression extends AbstractCodegenerator
         $innerLines[] = '# logging';
         $innerLines[] = 'results = {';
         $innerLines[] = '    "mse_val": mse_val,';
-        $innerLines[] = '    "mse_test": mse_test,';
+        $innerLines[] = '    "mse_test": 0,';
         $innerLines[] = '    "r2_val": r2_val,';
-        $innerLines[] = '    "r2_test": r2_test,';
-        $innerLines[] = '    "scatterplot": scatterplot,';
+        $innerLines[] = '    "r2_test": 0,';
+        $innerLines[] = '    "scatterplot_val": scatterplot_val,';
+        $innerLines[] = '    "scatterplot_test": "",';
         $innerLines[] = '    "duration": end_time - start_time';
         $innerLines[] = '}';
+
+        if ((int) $hyperparameter['testPercentage'] > 0) {
+
+            $innerLines[] = '';
+            $innerLines[] = '# gather performance data';
+            $innerLines[] = 'target_pred_test = model.predict(features_test)';
+            $innerLines[] = 'mse_test = mean_squared_error(target_test, target_pred_test)';
+            $innerLines[] = 'r2_test = r2_score(target_test, target_pred_test)';
+
+            $innerLines[] = '';
+            $innerLines[] = '# generating plot';
+            $innerLines[] = 'plt.scatter(target_test, target_pred_test)';
+            $innerLines[] = 'plt.xlabel("True Values")';
+            $innerLines[] = 'plt.ylabel("Predictions")';
+            $innerLines[] = 'plt.axis("equal")';
+            $innerLines[] = 'plt.axis("square")';
+            $innerLines[] = 'plt.plot([-100, 100], [-100, 100])';
+            $innerLines[] = 'scatterplot_test = plot_to_base64(plt)';
+            $innerLines[] = 'plt.close()';
+
+            $innerLines[] = '';
+            $innerLines[] = 'results["mse_test"] = mse_test';
+            $innerLines[] = 'results["r2_test"] = r2_test';
+            $innerLines[] = 'results["scatterplot_test"] = scatterplot_test';
+        }
+
         $innerLines[] = 'with open("__REPORT_FILE__", "w") as outfile:';
         $innerLines[] = '    json.dump(results, outfile, indent=4)';
 
