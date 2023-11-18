@@ -172,6 +172,12 @@ class NeuralNetState extends AbstractState
         if (!file_exists($this->model->getCheckpointPath())) {
             return false;
         }
+        if (!$this->model->getEncoderPath()) {
+            return false;
+        }
+        if (!file_exists($this->model->getEncoderPath())) {
+            return false;
+        }
         return parent::validTraining();
     }
 

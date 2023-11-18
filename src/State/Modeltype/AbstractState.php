@@ -64,6 +64,9 @@ abstract class AbstractState implements StateInterface
             if (file_exists($task->getScriptPath() ?? '')) {
                 unlink($task->getScriptPath());
             }
+            if (file_exists($this->model->getEncoderPath() ?? '')) {
+                unlink($this->model->getEncoderPath());
+            }
             $this->model->removeTrainingTask($task);
             $this->entityManager->remove($task);
         }
@@ -92,6 +95,9 @@ abstract class AbstractState implements StateInterface
             }
             if (file_exists($this->model->getScalerPath() ?? '')) {
                 unlink($this->model->getScalerPath());
+            }
+            if (file_exists($this->model->getEncoderPath() ?? '')) {
+                unlink($this->model->getEncoderPath());
             }
             $this->model->setModelPath('')
                 ->setScalerPath('')
@@ -294,6 +300,14 @@ abstract class AbstractState implements StateInterface
     public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
     {
         $this->model->setScalerPath($pathGenerator->getScalerFile('pkl'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
+    }
+
+    public function setEncoderFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setEncoderPath($pathGenerator->getEncoderFile('pkl'))
             ->setUpdatedate(new \DateTime());
 
         return $this;

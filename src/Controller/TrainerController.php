@@ -371,6 +371,7 @@ class TrainerController extends AbstractController
             $state->addTrainingTask($task)
                 ->setModelFile($pathGenerator)
                 ->setCheckpointFile($pathGenerator)
+                ->setEncoderFile($pathGenerator)
                 ->setScalerFile($pathGenerator);
 
             $this->entityManager->flush();

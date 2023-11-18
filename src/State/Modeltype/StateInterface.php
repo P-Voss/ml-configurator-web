@@ -65,4 +65,6 @@ interface StateInterface extends \JsonSerializable, \SplSubject
 
     public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface;
 
+    public function setEncoderFile(TrainingPathGenerator $pathGenerator): StateInterface;
+
 }

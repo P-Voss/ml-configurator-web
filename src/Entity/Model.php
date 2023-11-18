@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use phpDocumentor\Reflection\Types\This;
+use Doctrine\ORM\Mapping\OrderBy;
 
 #[ORM\Entity(repositoryClass: ModelRepository::class)]
 class Model implements \JsonSerializable
@@ -75,6 +75,7 @@ class Model implements \JsonSerializable
     private ?string $dataset = null;
 
     #[ORM\OneToMany(mappedBy: 'model', targetEntity: FieldConfiguration::class, orphanRemoval: true)]
+    #[OrderBy(["name" => "ASC"])]
     private Collection $fieldConfigurations;
 
     #[ORM\Column(length: 1000, nullable: true)]
@@ -88,6 +89,9 @@ class Model implements \JsonSerializable
 
     #[ORM\Column(length: 1000, nullable: true)]
     private ?string $latestConfigurationHash = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $encoderPath = null;
 
     public function __construct()
     {
@@ -513,5 +517,16 @@ class Model implements \JsonSerializable
         return $this;
     }
 
+    public function getEncoderPath(): ?string
+    {
+        return $this->encoderPath;
+    }
+
+    public function setEncoderPath(?string $encoderPath): static
+    {
+        $this->encoderPath = $encoderPath;
+
+        return $this;
+    }
 
 }
