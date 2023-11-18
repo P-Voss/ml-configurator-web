@@ -55,6 +55,8 @@ interface StateInterface extends \JsonSerializable, \SplSubject
 
     public function validFieldConfiguration(): bool;
 
+    public function validTraining(): bool;
+
     public function addTrainingTask(TrainingTask $task): StateInterface;
 
     public function setModelFile(TrainingPathGenerator $pathGenerator): StateInterface;

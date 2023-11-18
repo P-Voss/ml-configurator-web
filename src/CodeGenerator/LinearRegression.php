@@ -89,8 +89,13 @@ class LinearRegression extends AbstractCodegenerator
         );
         $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
         $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
-
-        $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features], axis=1)';
+        $innerLines[] = 'scaler = StandardScaler()';
+        $innerLines[] = 'number_features_scaled = scaler.fit_transform(number_features)';
+        $innerLines[] = sprintf(
+            "dump(scaler, '%s')",
+            $this->model->getScalerPath()
+        );
+        $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features_scaled], axis=1)';
         $innerLines[] = '';
         if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = sprintf(

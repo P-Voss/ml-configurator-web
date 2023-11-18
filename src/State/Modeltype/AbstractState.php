@@ -13,6 +13,7 @@ use App\Entity\SvmConfiguration;
 use App\Entity\TrainingTask;
 use App\Enum\ModelTypes;
 use App\Event\SubjectTrait;
+use App\Service\TrainingPathGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 
@@ -126,6 +127,34 @@ abstract class AbstractState implements StateInterface
 
     abstract public function setHyperParameter(array $params = []);
 
+    /**
+     * @return bool
+     * basic validation if a model completed a training and has a trained model-file
+     * call from conrete model-state to implement further specific checks
+     */
+    public function validTraining(): bool {
+        if ($this->model->getTrainingTasks()->count() === 0) {
+            return false;
+        }
+        $hasCompletedTraining = false;
+        foreach ($this->model->getTrainingTasks() as $task) {
+            if ($task->getState() === TrainingTask::STATE_COMPLETED) {
+                $hasCompletedTraining = true;
+                break;
+            }
+        }
+        if (!$hasCompletedTraining) {
+            return false;
+        }
+        if (!$this->model->getModelPath()) {
+            return false;
+        }
+        if (!file_exists($this->model->getModelPath())) {
+            return false;
+        }
+
+        return true;
+    }
 
     public function validBaseData(): bool {
         if (mb_strlen(trim($this->model->getName())) < "3") {
@@ -222,6 +251,14 @@ abstract class AbstractState implements StateInterface
         }
 
         return true;
+    }
+
+    public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setScalerPath($pathGenerator->getScalerFile('pkl'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
     }
 
 

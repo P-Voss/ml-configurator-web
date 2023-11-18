@@ -158,12 +158,4 @@ class NeuralNetState extends AbstractState
         return $this;
     }
 
-    public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
-    {
-        $this->model->setScalerPath($pathGenerator->getScalerFile('pkl'))
-            ->setUpdatedate(new \DateTime());
-
-        return $this;
-    }
-
 }

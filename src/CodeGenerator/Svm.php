@@ -91,7 +91,7 @@ class Svm extends AbstractCodegenerator
         $innerLines[] = 'number_features_scaled = scaler.fit_transform(number_features)';
         $innerLines[] = sprintf(
             "dump(scaler, '%s')",
-            $pathGenerator->getScalerFile('pkl')
+            $this->model->getScalerPath()
         );
         $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features_scaled], axis=1)';
         $innerLines[] = '';
