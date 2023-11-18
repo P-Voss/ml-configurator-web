@@ -16,19 +16,20 @@ abstract class AbstractCodegenerator
         $this->model = $model;
     }
 
-
     abstract public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string;
+
+    /**
+     * @return string
+     */
+    abstract public function getExampleScript(): string;
+
+    abstract public function generateApplicationScript(string $sourceFile, string $targetFile): string;
 
     final protected function getDataPath(TrainingPathGenerator $pathGenerator): string
     {
         $filename = Dataset::getFilename($this->model->getDataset());
         return $pathGenerator->getCsvFile($filename);
     }
-
-    /**
-     * @return string
-     */
-    abstract public function getExampleScript(): string;
 
     /**
      * @throws \Exception

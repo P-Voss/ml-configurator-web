@@ -78,20 +78,35 @@ class LogisticRegression extends AbstractCodegenerator
         );
 
         $innerLines[] = sprintf(
-            'text_features = data[[%s]]',
+            'categorical_columns = [%s]',
             implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
         );
         $innerLines[] = sprintf(
             'number_features = data[[%s]]',
             implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
         );
-        $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
+
+        $innerLines[] = '';
+        $innerLines[] = '# gathering total categories for encoder';
+        $innerLines[] = 'categories = []';
+        $innerLines[] = 'for column in categorical_columns:';
+        $innerLines[] = '    unique_values = data[column].unique().tolist()';
+        $innerLines[] = '    categories.append(unique_values)';
+        $innerLines[] = '';
+        $innerLines[] = 'encoder = OneHotEncoder(categories=categories, sparse=False, handle_unknown="ignore")';
+        $innerLines[] = '';
+
+        $innerLines[] = 'text_features = data[categorical_columns]';
         $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
         $innerLines[] = 'scaler = StandardScaler()';
         $innerLines[] = 'number_features_scaled = scaler.fit_transform(number_features)';
         $innerLines[] = sprintf(
             "dump(scaler, '%s')",
             $this->model->getScalerPath()
+        );
+        $innerLines[] = sprintf(
+            'dump(encoder, "%s")',
+            $this->model->getEncoderPath()
         );
         $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features_scaled], axis=1)';
         $innerLines[] = '';
@@ -323,4 +338,10 @@ class LogisticRegression extends AbstractCodegenerator
             . implode(PHP_EOL, $endLines);
         return $result;
     }
+
+    public function generateApplicationScript(string $sourceFile, string $targetFile): string
+    {
+        return "";
+    }
+
 }

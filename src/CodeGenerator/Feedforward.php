@@ -120,20 +120,35 @@ class Feedforward extends AbstractCodegenerator
         );
 
         $innerLines[] = sprintf(
-            'text_features = data[[%s]]',
+            'categorical_columns = [%s]',
             implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
         );
         $innerLines[] = sprintf(
             'number_features = data[[%s]]',
             implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
         );
-        $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
+
+        $innerLines[] = '';
+        $innerLines[] = '# gathering total categories for encoder';
+        $innerLines[] = 'categories = []';
+        $innerLines[] = 'for column in categorical_columns:';
+        $innerLines[] = '    unique_values = data[column].unique().tolist()';
+        $innerLines[] = '    categories.append(unique_values)';
+        $innerLines[] = '';
+        $innerLines[] = 'encoder = OneHotEncoder(categories=categories, sparse=False, handle_unknown="ignore")';
+        $innerLines[] = '';
+
+        $innerLines[] = 'text_features = data[categorical_columns]';
         $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
         $innerLines[] = 'scaler = StandardScaler()';
         $innerLines[] = 'number_features_scaled = scaler.fit_transform(number_features)';
         $innerLines[] = sprintf(
             "dump(scaler, '%s')",
             $this->model->getScalerPath()
+        );
+        $innerLines[] = sprintf(
+            'dump(encoder, "%s")',
+            $this->model->getEncoderPath()
         );
         $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features_scaled], axis=1)';
         $innerLines[] = '';
@@ -415,6 +430,61 @@ class Feedforward extends AbstractCodegenerator
         }
 
         return $pythonCode;
+    }
+
+    public function generateApplicationScript(string $sourceFile, string $targetFile): string
+    {
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
+
+        $lines = [];
+        $lines[] = '# deaktiviert Info-Meldungen von Tensorflow';
+        $lines[] = 'import os';
+        $lines[] = 'os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"';
+        $lines[] = '';
+        $lines[] = "from joblib import load";
+        $lines[] = "import tensorflow as tf";
+        $lines[] = "from sklearn.preprocessing import OneHotEncoder, StandardScaler";
+        $lines[] = "import numpy as np";
+        $lines[] = "import pandas as pd";
+
+        $lines[] = '';
+        $lines[] = '# loading model';
+        $lines[] = sprintf('model = tf.keras.models.load_model("%s")', $this->model->getModelPath());
+        $lines[] = '# loading scaler';
+        $lines[] = sprintf('scaler = load("%s")', $this->model->getScalerPath());
+        $lines[] = '# loading encoder';
+        $lines[] = sprintf('encoder = load("%s")', $this->model->getEncoderPath());
+
+        $lines[] = '';
+        $lines[] = '# loading source';
+        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0)', $sourceFile);
+
+        $lines[] = '';
+        $lines[] = sprintf(
+            'text_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
+        );
+        $lines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+        $lines[] = '';
+        $lines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
+        $lines[] = 'number_features_scaled = scaler.transform(number_features)';
+        $lines[] = 'features = np.concatenate([text_features_encoded, number_features_scaled], axis=1)';
+
+        $lines[] = '';
+        $lines[] = '# executing predictions';
+        $lines[] = 'predictions = model.predict(features)';
+
+        $lines[] = '';
+        $lines[] = '# saving predictions';
+        $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        $lines[] = sprintf('result_df.to_csv("%s", index=False)', $targetFile);
+        $result = implode(PHP_EOL, $lines);
+
+        return $result;
     }
 
 }

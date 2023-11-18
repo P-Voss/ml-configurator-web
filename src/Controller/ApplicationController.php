@@ -2,15 +2,16 @@
 
 namespace App\Controller;
 
-use App\Entity\Model;
 use App\Entity\User;
 use App\Repository\ModelRepository;
+use App\Service\TrainingPathGenerator;
 use App\State\Modeltype\AbstractState;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
@@ -21,25 +22,37 @@ class ApplicationController extends AbstractController
     {}
 
     #[Route('/{_locale<en|de>}/application/{id}', name: 'app_application', methods: ["GET"])]
-    public function configurator(#[CurrentUser] User $user, int $id = null): Response
+    public function configurator(#[CurrentUser] User $user, ModelRepository $repository, int $id = null): Response
     {
-        $validModelId = false;
-        foreach ($user->getModels() as $model) {
-            if ($model->getId() === $id) {
-                $validModelId = true;
-            }
+        $model = $repository->find($id);
+        if (!$model) {
+            return $this->redirectToRoute('app_index');
         }
-        if (!$validModelId) {
-            $this->redirectToRoute('app_index');
+        if ($model->getStudent()->getId() !== $user->getId()) {
+            return $this->redirectToRoute('app_index');
+        }
+
+        try {
+            $state = AbstractState::getState($model, $this->entityManager);
+        } catch (\Exception $exception) {
+            return $this->redirectToRoute('app_index');
+        }
+        if (!$state->validTraining()) {
+            return $this->redirectToRoute('app_index');
         }
 
         return $this->render('application/index.html.twig', [
-            'modelId' => $validModelId ? $id : null,
+            'modelId' => $id,
         ]);
     }
 
     #[Route('/application/execute', name: 'app_application_execute', methods: ['POST'])]
-    public function execute(#[CurrentUser] User $user, Request $request, ModelRepository $repository)
+    public function execute(
+        #[CurrentUser] User $user,
+        Request $request,
+        ModelRepository $repository,
+        TrainingPathGenerator $pathGenerator
+    )
     {
         $model = $repository->find($request->get('id', 0));
         if (!$model) {
@@ -62,15 +75,69 @@ class ApplicationController extends AbstractController
             ], Response::HTTP_UNAUTHORIZED);
         }
 
+        try {
+            $state = AbstractState::getState($model, $this->entityManager);
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid input',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        if (!$state->validTraining()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid input',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $codeGenerator = $state->getCodegenerator();
+        $pathGenerator->setLookup($model->getLookup());
+
         $lines = explode(PHP_EOL, $request->get('input'));
-        $csv = [];
+        if (count($lines) < 1) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid input',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $sourceFile = fopen($pathGenerator->getExecCsvFile(), 'w');
         foreach ($lines as $line) {
-            $csv[] = str_getcsv($line, ';', '');
+            $csvLine = str_getcsv($line, ';', '');
+            fputcsv($sourceFile, $csvLine, ';', chr(0));
+        }
+        fclose($sourceFile);
+
+        $script = $codeGenerator->generateApplicationScript(
+            $pathGenerator->getExecCsvFile(),
+            $pathGenerator->getExecResultFile()
+        );
+        file_put_contents($pathGenerator->getExecPythonFile(), $script);
+
+        $process = new Process([
+            $this->getParameter('app.pythonpath'),
+            $pathGenerator->getExecPythonFile()
+        ]);
+        $process->setTimeout(3600);
+        $process->run();
+        $message = '';
+        $success = true;
+        $result = [];
+        if (!$process->isSuccessful()) {
+            $message = $process->getErrorOutput();
+            $success = false;
+        } else {
+            if (file_exists($pathGenerator->getExecResultFile())) {
+                $file = fopen($pathGenerator->getExecResultFile(), 'r');
+                while ($row = fgetcsv($file, null, ';', chr(0))) {
+                    $result[] = $row[0];
+                }
+                fclose($file);
+            }
         }
 
         return new JsonResponse([
-            'success' => true,
-            'message' => 'not yet implemented',
+            'success' => $success,
+            'message' => $message,
+            'result' => $result,
         ]);
     }
 

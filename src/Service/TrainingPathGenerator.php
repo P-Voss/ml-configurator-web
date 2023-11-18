@@ -20,7 +20,9 @@ class TrainingPathGenerator
 
     public function __construct(
         private string $trainingPythonDir,
+        private string $execPythonDir,
         private string $trainingCsvDir,
+        private string $execCsvDir,
         private string $trainingReportDir,
         private string $checkpointDir,
         private string $modelDir,
@@ -47,6 +49,21 @@ class TrainingPathGenerator
         $this->lookup = $lookup;
     }
 
+    public function getExecPythonFile(): string
+    {
+        return $this->getFilepath($this->execPythonDir, 'script', 'py');
+    }
+
+    public function getExecCsvFile(): string
+    {
+        return $this->execCsvDir . $this->lookup . '_source.csv';
+    }
+
+    public function getExecResultFile(): string
+    {
+        return $this->execCsvDir . $this->lookup . '_result.csv';
+    }
+
     public function getCsvFile(string $filename): string
     {
         return $this->trainingCsvDir . $filename;
@@ -65,6 +82,11 @@ class TrainingPathGenerator
     public function getScalerFile(string $extension): string
     {
         return $this->scalerDir . 'scaler_' . $this->lookup . '.' . $extension;
+    }
+
+    public function getEncoderFile(string $extension): string
+    {
+        return $this->scalerDir . 'encoder_' . $this->lookup . '.' . $extension;
     }
 
     public function getPythonFile(): string

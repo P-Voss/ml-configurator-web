@@ -16,15 +16,13 @@ services:
         bind:
             $sampleUserFile: '%kernel.project_dir%/data/user/demousers.json'
 
-#            $execXmlDir: '%kernel.project_dir%/data/execute/xml/'
-#            $execPythonDir: '%kernel.project_dir%/data/execute/python/'
-#            $trainingXmlDir: '%kernel.project_dir%/data/training/xml/'
+            $execCsvDir: '%kernel.project_dir%/data/execute/csv/'
+            $execPythonDir: '%kernel.project_dir%/data/execute/python/'
 
             # directory containing the generated python scripts
             $trainingPythonDir: '%kernel.project_dir%/data/training/python/'
 
             # upload directory for training data
-#            $trainingCsvDir: '%kernel.project_dir%/data/training/csv/'
             $trainingCsvDir: '%kernel.project_dir%/data/samples/'
 
             # directory for training reports

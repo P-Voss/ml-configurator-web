@@ -79,18 +79,34 @@ class DecisionTree extends AbstractCodegenerator
         );
 
         $innerLines[] = sprintf(
-            'text_features = data[[%s]]',
+            'categorical_columns = [%s]',
             implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
         );
         $innerLines[] = sprintf(
             'number_features = data[[%s]]',
             implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
         );
-        $innerLines[] = 'encoder = OneHotEncoder(sparse=False)';
-        $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
 
+        $innerLines[] = '';
+        $innerLines[] = '# gathering total categories for encoder';
+        $innerLines[] = 'categories = []';
+        $innerLines[] = 'for column in categorical_columns:';
+        $innerLines[] = '    unique_values = data[column].unique().tolist()';
+        $innerLines[] = '    categories.append(unique_values)';
+        $innerLines[] = '';
+        $innerLines[] = 'encoder = OneHotEncoder(categories=categories, sparse=False, handle_unknown="ignore")';
+        $innerLines[] = '';
+
+        $innerLines[] = 'text_features = data[categorical_columns]';
+        $innerLines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
         $innerLines[] = 'features = np.concatenate([text_features_encoded, number_features], axis=1)';
         $innerLines[] = '';
+        $innerLines[] = sprintf(
+            'dump(encoder, "%s")',
+            $this->model->getEncoderPath()
+        );
+        $innerLines[] = '';
+
         if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = sprintf(
                 'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=%s, random_state=42)',
@@ -316,4 +332,56 @@ class DecisionTree extends AbstractCodegenerator
             . implode(PHP_EOL, $endLines);
         return $result;
     }
+
+    public function generateApplicationScript(string $sourceFile, string $targetFile): string
+    {
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
+
+        $lines = [];
+        $lines[] = '# deaktiviert Info-Meldungen von Tensorflow';
+        $lines[] = 'import os';
+        $lines[] = 'os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"';
+        $lines[] = '';
+        $lines[] = "from joblib import load";
+        $lines[] = "from sklearn.preprocessing import OneHotEncoder";
+        $lines[] = "import numpy as np";
+        $lines[] = "import pandas as pd";
+
+        $lines[] = '';
+        $lines[] = '# loading model';
+        $lines[] = sprintf('model = load("%s")', $this->model->getModelPath());
+
+        $lines[] = '';
+        $lines[] = '# loading source';
+        $lines[] = sprintf('source = pd.read_csv("%s")', $sourceFile);
+
+        $lines[] = '';
+        $lines[] = sprintf(
+            'text_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
+        );
+        $lines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+        $lines[] = '';
+        $lines[] = 'encoder = OneHotEncoder(sparse=False)';
+        $lines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
+        $lines[] = 'features = np.concatenate([text_features_encoded, number_features], axis=1)';
+
+        $lines[] = '';
+        $lines[] = '# executing predictions';
+        $lines[] = 'predictions = model.predict(features)';
+
+        $lines[] = '';
+        $lines[] = '# saving predictions';
+        $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        $lines[] = sprintf('result_df.to_csv("%s", index=False)', $targetFile);
+        $result = implode(PHP_EOL, $lines);
+
+        return $result;
+    }
+
+
 }

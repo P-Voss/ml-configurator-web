@@ -6,14 +6,13 @@
             <div class="tab-content" id="pills-tabContent" v-if="modelState === 'COMPLETED'">
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-12">
                         <h2>Modellparameter</h2>
-
                     </div>
                 </div>
 
                 <div class="row mt-4">
-                    <div class="col-12 col-lg-9">
+                    <div class="col-9 col-lg-6">
                         <div class="row gy-3">
                             <div class="col-12">
                                 <h2>Eingabe der Features</h2>
@@ -24,41 +23,41 @@
                                         class="form-control"
                                         id="inputFeatures"
                                         rows="5"
-                                        :placeholder="featureString"
                                         v-model="input"
                                         required
                                     ></textarea>
                                 </div>
                             </div>
-                            <div class="col-2 offset-10">
+                            <div class="col-9">
+                                {{message}}
+                            </div>
+                            <div class="col-2">
                                 <button
                                     @click.prevent="apply"
-                                    :class="{'disabled': input === ''}"
+                                    :class="{'disabled': input === '' || execState !== 'INIT'}"
                                     class="btn btn-primary"
                                 >
                                     Ausführen
                                 </button>
                             </div>
                         </div>
-
                     </div>
 
-
-                    <div class="col-12 col-lg-3">
-                        <div class="row">
+                    <div class="col-3 col-lg-2">
+                        <div class="row ms-3 gy-3" v-if="result.length > 0">
                             <div class="col-12">
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="idColumn" v-model="includeIdColumn" />
-                                    <label class="form-check-label" for="idColumn">Die erste Spalte enthält ID</label>
-                                </div>
+                                <h2>Ergebnis</h2>
+                            </div>
+                            <div class="col-12" style="max-height: 60vh; overflow-y: scroll;">
+                                <p style="padding: 0; margin: 0;" v-for="(value, index) in result" :key="index">{{value}}</p>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="col-12 col-lg-3 offset-lg-1">
                         <div class="row">
                             <div class="col-12 fw-bold mb-3">
                                 Benötigte Spalten
-                            </div>
-                            <div class="col-12">
-                                <p v-if="includeIdColumn">ID</p>
                             </div>
                             <div class="col-12" v-for="field in model.fieldConfigurations" :key="field.id">
                                 <p v-if="!field.isIgnored && !field.isTarget">{{field.name}} - {{field.type}}</p>
@@ -90,8 +89,8 @@ export default {
     data() {
         return {
             modelState: "PENDING",
+            execState: "INIT",
             input: "",
-            includeIdColumn: true,
             model: {
                 id: '',
                 name: '',
@@ -105,7 +104,9 @@ export default {
                 svmConfiguration: {},
                 linRegConfiguration: {},
                 logRegConfiguration: {},
-            }
+            },
+            result: [],
+            message: "",
         }
     },
     mounted() {
@@ -141,9 +142,6 @@ export default {
                         this.model.logRegConfiguration = data.model.logRegConfiguration ?? {}
 
                         let features = []
-                        if (this.includeIdColumn) {
-                            features.push("ID")
-                        }
                         for (let field of this.model.fieldConfigurations) {
                             if (field.isIgnored) {
                                 continue
@@ -162,11 +160,19 @@ export default {
                 })
         },
         async apply() {
+            this.execState = "PENDING"
+            this.result = []
+            this.message = ""
             let form = new FormData()
             form.set('id', this.model.id)
             form.set('input', this.input)
             let response = await ApplicationService.execute(this.executeUrl, form)
-            console.log(response)
+            if (response.data.success) {
+                this.result = response.data.result
+            } else {
+                this.message = "Fehler bei der Verarbeitung"
+            }
+            this.execState = "INIT"
         }
     }
 }
