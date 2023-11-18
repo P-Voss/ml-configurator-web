@@ -4,7 +4,9 @@
             <Navigation
                 :init-step-completed="initStepCompleted"
                 :architecture-step-completed="architectureStepCompleted"
+                :training-step-completed="architectureStepCompleted"
                 :trainer-url="trainerUrl"
+                :executor-url="executorUrl"
                 :current-step="currentStep"
                 @set-step="val => currentStep = val"
                 v-if="modelState === 'COMPLETED'"
@@ -96,6 +98,7 @@ export default {
         updateUrl: String,
         loadModelUrl: String,
         trainerUrl: String,
+        executorUrl: String,
         addLayerUrl: String,
         removeLayerUrl: String,
         saveDtreeConfigUrl: String,
@@ -120,6 +123,7 @@ export default {
             dataStepCompleted: false,
             hyperparameterStepCompleted: false,
             architectureStepCompleted: false,
+            trainingStepCompleted: false,
             modelState: "PENDING",
             model: {
                 id: '',
@@ -186,6 +190,7 @@ export default {
 
                         this.initStepCompleted = data.model.validBaseData
                         this.architectureStepCompleted = data.model.validArchitecture
+                        this.trainingStepCompleted = data.model.validTraining
                     }
                     this.modelState = "COMPLETED"
                 })

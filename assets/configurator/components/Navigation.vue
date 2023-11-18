@@ -31,8 +31,9 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link disabled"
-                   id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
+                <a class="nav-link"
+                   :class="{'disabled' : !trainingStepCompleted}"
+                   id="pills-hyperparameter-tab" :href="executorUrl" role="tab" aria-controls="pills-hyperparameter">
                     {{$t("navigation.execute")}}
                 </a>
             </li>
@@ -64,8 +65,9 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link disabled"
-                   id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
+                <a class="nav-link"
+                   :class="{'disabled' : !trainingStepCompleted}"
+                   id="pills-hyperparameter-tab" :href="executorUrl" role="tab" aria-controls="pills-hyperparameter">
                     {{$t("navigation.execute")}}
                 </a>
             </li>
@@ -80,7 +82,9 @@ export default {
         currentStep: String,
         initStepCompleted: Boolean,
         architectureStepCompleted: Boolean,
+        trainingStepCompleted: Boolean,
         trainerUrl: String,
+        executorUrl: String,
     }
 }
 </script>

@@ -4,8 +4,10 @@
             <TrainerNavigation
                 :init-step-completed="model.validFieldConfiguration"
                 :hyperparameter-step-completed="model.validHyperparameterConfiguration"
+                :training-step-completed="model.validTraining"
                 :current-step="currentStep"
                 :configurator-url="configuratorUrl"
+                :executor-url="executorUrl"
                 @set-step="val => currentStep = val"
             />
 
@@ -83,6 +85,8 @@
                         :execute-task-url="this.executeTaskUrl"
                         :load-example-url="this.loadExampleUrl"
                         @rollback="this.rollback"
+                        @executed-task="validTraining => this.model.validTraining = validTraining"
+                        @deleted-task="validTraining => this.model.validTraining = validTraining"
                     />
                 </div>
             </div>
@@ -122,6 +126,7 @@ export default {
         modelId: String,
         loadModelUrl: String,
         configuratorUrl: String,
+        executorUrl: String,
         uploadUrl: String,
         ignoreFieldUrl: String,
         unignoreFieldUrl: String,
@@ -150,6 +155,7 @@ export default {
                 architectureType: '',
                 validFieldConfiguration: false,
                 validHyperparameterConfiguration: false,
+                validTraining: false,
                 configurationHash: "",
             },
             filedata: {
@@ -186,6 +192,7 @@ export default {
                         this.model.type = data.model.type
                         this.model.architectureType = data.model.architectureType
                         this.model.validFieldConfiguration = data.model.validFieldConfiguration
+                        this.model.validTraining = data.model.validTraining
                         this.model.configurationHash = data.model.configurationHash
 
                         this.fieldConfigurations = data.model.fieldConfigurations

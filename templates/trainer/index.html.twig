@@ -18,6 +18,7 @@
             model-id="{{ modelId }}"
             load-model-url="{{ path('app_configurator_loadmodel') }}"
             configurator-url="{{ path('app_configurator', {id: modelId}) }}"
+            executor-url="{{ path('app_application', {id: modelId}) }}"
             mark-target-url="{{ path('app_trainer_data_marktarget') }}"
             remove-target-url="{{ path('app_trainer_data_removetarget') }}"
             ignore-field-url="{{ path('app_trainer_data_ignore') }}"

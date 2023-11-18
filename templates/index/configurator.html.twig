@@ -13,6 +13,7 @@
             initialize-url="{{ path('app_configurator_init') }}"
             model-id="{{ modelId }}"
             trainer-url="{{ path('app_trainer', {id: modelId}) }}"
+            executor-url="{{ path('app_application', {id: modelId}) }}"
             load-model-url="{{ path('app_configurator_loadmodel') }}"
             update-url="{{ path('app_configurator_update') }}"
             add-layer-url="{{ path('app_configurator_layer_add') }}"

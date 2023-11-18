@@ -254,10 +254,11 @@ export default {
         async deleteTrainingTask() {
             let form = new FormData()
             form.set('taskId', this.activeTask.id)
-            await TrainingService.deleteTrainingTask(this.deleteTaskUrl, form)
+            let response = await TrainingService.deleteTrainingTask(this.deleteTaskUrl, form)
             this.activeTask.id = null
             this.activeTask.state = "pending"
             this.activeTask.data = {}
+            this.$emit('deleted-task', response.data.validTraining)
             await this.loadTasks()
         },
         async submitTrainingTask() {
@@ -282,6 +283,7 @@ export default {
                 this.activeTask.state = "COMPLETED"
                 this.state = "INIT"
                 this.stateMessage = ""
+                this.$emit('executed-task', response.data.validTraining)
                 await this.loadTasks()
             }
         },
