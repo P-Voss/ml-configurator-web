@@ -120,16 +120,6 @@ class LinearRegressionState extends AbstractState
         return $this;
     }
 
-    public function setCheckpointFile(TrainingPathGenerator $pathGenerator): StateInterface
-    {
-        return $this;
-    }
-
-    public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
-    {
-        return $this;
-    }
-
     public function getCodegenerator(): AbstractCodegenerator
     {
         return new LinearRegression($this->model);

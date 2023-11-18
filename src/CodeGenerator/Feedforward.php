@@ -173,7 +173,7 @@ class Feedforward extends AbstractCodegenerator
         $innerLines[] = '';
         $innerLines[] = sprintf(
             'checkpoint = ModelCheckpoint("%s", monitor="val_loss", verbose=1, save_best_only=True, mode="min")',
-            $pathGenerator->getCheckpointFile('h5')
+            $this->model->getCheckpointPath()
         );
         $innerLines[] = '';
 

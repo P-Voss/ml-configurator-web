@@ -141,14 +141,4 @@ class SvmState extends AbstractState
         return $this;
     }
 
-    public function setCheckpointFile(TrainingPathGenerator $pathGenerator): StateInterface
-    {
-        return $this;
-    }
-
-    public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
-    {
-        return $this;
-    }
-
 }

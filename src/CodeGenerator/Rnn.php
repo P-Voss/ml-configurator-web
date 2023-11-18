@@ -170,6 +170,13 @@ class Rnn extends AbstractCodegenerator
         $innerLines[] = sprintf('batch_size = %s', (int) $hyperparameter['batchSize'], );
         $innerLines[] = sprintf('epochs = %s', (int) $hyperparameter['epochs'], );
 
+        $innerLines[] = '';
+        $innerLines[] = sprintf(
+            'checkpoint = ModelCheckpoint("%s", monitor="val_loss", verbose=1, save_best_only=True, mode="min")',
+            $this->model->getCheckpointPath()
+        );
+        $innerLines[] = '';
+
         if ($hyperparameter['patience']) {
             $innerLines[] = '';
             $innerLines[] = '# defining an early-stop mechanism';
@@ -185,10 +192,10 @@ class Rnn extends AbstractCodegenerator
 
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            "history = model.fit(features_train, target_train, validation_data = (features_val, target_val), epochs = %s, batch_size = %s, verbose = 1, callbacks = [%s])",
+            "history = model.fit(features_train, target_train, validation_data = (features_val, target_val), epochs = %s, batch_size = %s, verbose = 2, callbacks = [checkpoint, csv_logger %s])",
             $hyperparameter['epochs'],
             $hyperparameter['batchSize'],
-            $hyperparameter['patience'] > 0 ? 'early_stop' : '',
+            $hyperparameter['patience'] > 0 ? ', early_stop' : '',
         );
         $innerLines[] = '';
         $innerLines[] = 'loss = model.evaluate(features_val, target_val)';

@@ -253,6 +253,11 @@ abstract class AbstractState implements StateInterface
         return true;
     }
 
+    public function setCheckpointFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        return $this;
+    }
+
     public function setScalerFile(TrainingPathGenerator $pathGenerator): StateInterface
     {
         $this->model->setScalerPath($pathGenerator->getScalerFile('pkl'))
