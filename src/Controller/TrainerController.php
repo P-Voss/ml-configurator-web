@@ -464,4 +464,53 @@ class TrainerController extends AbstractController
             'code' => $script
         ]);
     }
+
+    #[Route('/{_locale<en|de>}/trainer/training/delete', name: 'app_trainer_training_delete', methods: ['POST'])]
+    public function deleteTask(
+        #[CurrentUser] User $user,
+        Request $request,
+        TrainingTaskRepository $repository,
+        TrainingPathGenerator $pathGenerator,
+    )
+    {
+        $task = $repository->find($request->get('taskId', 0));
+        if (!$task) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid id',
+            ], Response::HTTP_NOT_FOUND);
+        }
+        if ($task->getModel()->getStudent()->getId() !== $user->getId()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid id',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($task->getState() !== TrainingTask::STATE_COMPLETED && $task->getState() !== TrainingTask::STATE_ERROR) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'can not delete task at this moment',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $model = $task->getModel();
+        if (file_exists($task->getScriptPath())) {
+            unlink($task->getScriptPath());
+        }
+        if (file_exists($task->getReportPath())) {
+            unlink($task->getReportPath());
+        }
+        if (file_exists($task->getLogPath())) {
+            unlink($task->getLogPath());
+        }
+        $model->removeTrainingTask($task)
+            ->setUpdatedate(new \DateTime());
+        $this->entityManager->remove($task);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+        ]);
+    }
+
 }

@@ -52,17 +52,61 @@
             </div>
 
             <div v-if="state !== 'PENDING'" class="col-12 col-lg-8">
-                <div class="row m-3">
-                    <div class="col-3">
-                        <button v-if="state === 'INIT'" class="btn btn-primary" @click="submitTrainingTask">Ausführen</button>
-                    </div>
-                    <div class="col-9" v-if="activeTask.state === 'COMPLETED' && activeTask.data.modelHash !== model.configurationHash">
-                        <button
-                            @click.prevent="rollback" class="btn"
-                            :class="{'btn-primary': activeTask.id*1 === bestTrainingId*1, 'btn-info': activeTask.id*1 !== bestTrainingId*1}"
-                        >
-                            Modellkonfiguration dieses Trainings wiederherstellen
-                        </button>
+                <div class="row m-3 justify-content-between">
+
+                    <div class="col-12">
+                        <div class="btn-group d-none d-lg-flex" role="group">
+                            <button v-if="state === 'INIT'" class="btn btn-primary d-grid" @click="submitTrainingTask">Ausführen</button>
+                            <button
+                                @click.prevent="rollback"
+                                class="btn d-grid"
+                                :class="{
+                                    'btn-primary': activeTask.id*1 === bestTrainingId*1,
+                                    'btn-warning': activeTask.id*1 !== bestTrainingId*1
+                                }"
+                                :disabled="!(activeTask.state === 'COMPLETED' && activeTask.data.modelHash !== model.configurationHash)"
+                            >
+                                Frühere Konfiguration wiederherstellen
+                            </button>
+                            <button
+                                class="btn btn-danger d-grid"
+                                @click="deleteTrainingTask"
+                                :disabled="!(activeTask.state === 'COMPLETED' || activeTask.state === 'ERROR')"
+                            >
+                                Löschen
+                            </button>
+                        </div>
+
+                        <div class="d-flex d-lg-none row gy-3">
+                            <div class="col-12">
+                                <div class="d-grid">
+                                    <button v-if="state === 'INIT'" class="btn btn-primary" @click="submitTrainingTask">Ausführen</button>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-grid">
+                                    <button
+                                        @click.prevent="rollback"
+                                        class="btn"
+                                        :class="{'btn-primary': activeTask.id*1 === bestTrainingId*1, 'btn-warning': activeTask.id*1 !== bestTrainingId*1}"
+                                        v-if="activeTask.state === 'COMPLETED' && activeTask.data.modelHash !== model.configurationHash"
+                                    >
+                                        Frühere Konfiguration wiederherstellen
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-grid">
+                                    <button
+                                        class="btn btn-danger"
+                                        @click="deleteTrainingTask"
+                                        v-if="activeTask.state === 'COMPLETED' || activeTask.state === 'ERROR'"
+                                    >
+                                        Löschen
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -172,6 +216,7 @@ export default {
     props: {
         model: Object,
         submitTaskUrl: String,
+        deleteTaskUrl: String,
         executeTaskUrl: String,
         loadTasksUrl: String,
         loadExampleUrl: String,
@@ -205,6 +250,15 @@ export default {
                     this.activeTask.data = {...task}
                 }
             }
+        },
+        async deleteTrainingTask() {
+            let form = new FormData()
+            form.set('taskId', this.activeTask.id)
+            await TrainingService.deleteTrainingTask(this.deleteTaskUrl, form)
+            this.activeTask.id = null
+            this.activeTask.state = "pending"
+            this.activeTask.data = {}
+            await this.loadTasks()
         },
         async submitTrainingTask() {
             this.state = "PENDING"

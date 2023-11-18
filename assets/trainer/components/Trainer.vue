@@ -79,6 +79,7 @@
                         :model="this.model"
                         :load-tasks-url="this.loadTasksUrl"
                         :submit-task-url="this.submitTaskUrl"
+                        :delete-task-url="this.deleteTaskUrl"
                         :execute-task-url="this.executeTaskUrl"
                         :load-example-url="this.loadExampleUrl"
                         @rollback="this.rollback"
@@ -129,6 +130,7 @@ export default {
         updateFieldUrl: String,
         saveHyperparameterUrl: String,
         submitTaskUrl: String,
+        deleteTaskUrl: String,
         executeTaskUrl: String,
         loadTasksUrl: String,
         loadExampleUrl: String,
