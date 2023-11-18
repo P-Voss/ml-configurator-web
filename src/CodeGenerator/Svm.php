@@ -12,7 +12,8 @@ class Svm extends AbstractCodegenerator
      * @param TrainingPathGenerator $pathGenerator
      * @return string
      * @throws \Exception
-     * @todo datasplit does not use testset
+     *
+     *  python script terminates with errorcode 500 in case of error
      */
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
@@ -221,6 +222,7 @@ class Svm extends AbstractCodegenerator
         $endLines = [];
         $endLines[] = 'except Exception as e:';
         $endLines[] = '    logging.error("Exception occurred", exc_info=True)';
+        $endLines[] = '    sys.exit(500)';
 
         $result = implode(PHP_EOL, $lines) . PHP_EOL
             . implode(PHP_EOL, $formattedInnerLines) . PHP_EOL

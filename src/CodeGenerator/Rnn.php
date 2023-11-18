@@ -12,6 +12,8 @@ class Rnn extends AbstractCodegenerator
     /**
      * @throws \Exception
      * Bugfix for compatibility issue between numpy and tensorflow 2.5: https://github.com/tensorflow/models/issues/9706#issuecomment-792106149
+     *
+     *  python script terminates with errorcode 500 in case of error
      */
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
@@ -252,6 +254,7 @@ class Rnn extends AbstractCodegenerator
         $endLines = [];
         $endLines[] = 'except Exception as e:';
         $endLines[] = '    logging.error("Exception occurred", exc_info=True)';
+        $endLines[] = '    sys.exit(500)';
 
         $result = implode(PHP_EOL, $lines) . PHP_EOL
             . implode(PHP_EOL, $innerLines) . PHP_EOL

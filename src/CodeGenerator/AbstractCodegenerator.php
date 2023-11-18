@@ -27,12 +27,8 @@ abstract class AbstractCodegenerator
 
     /**
      * @return string
-     * @todo only for dev purposes, making function abstract when implementing in child classes
      */
-    public function getExampleScript(): string
-    {
-        return "";
-    }
+    abstract public function getExampleScript(): string;
 
     /**
      * @throws \Exception

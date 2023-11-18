@@ -12,6 +12,8 @@ class Feedforward extends AbstractCodegenerator
     /**
      * @throws \Exception
      * @todo messy code, split components into functions later to improve readability
+     *
+     *  python script terminates with errorcode 500 in case of error
      */
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
@@ -252,6 +254,7 @@ class Feedforward extends AbstractCodegenerator
         $endLines = [];
         $endLines[] = 'except Exception as e:';
         $endLines[] = '    logging.error("Exception occurred", exc_info=True)';
+        $endLines[] = '    sys.exit(500)';
 
         $result = implode(PHP_EOL, $lines) . PHP_EOL
             . implode(PHP_EOL, $innerLines) . PHP_EOL

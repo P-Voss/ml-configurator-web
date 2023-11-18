@@ -12,6 +12,8 @@ class LinearRegression extends AbstractCodegenerator
      * @return string
      * @throws \Exception
      * @todo Import-Statements je nach Regularisierungstyp aussteuern
+     *
+     *  python script terminates with errorcode 500 in case of error
      */
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
@@ -205,6 +207,7 @@ class LinearRegression extends AbstractCodegenerator
         $endLines = [];
         $endLines[] = 'except Exception as e:';
         $endLines[] = '    logging.error("Exception occurred", exc_info=True)';
+        $endLines[] = '    sys.exit(500)';
 
         $result = implode(PHP_EOL, $lines) . PHP_EOL
             . implode(PHP_EOL, $formattedInnerLines) . PHP_EOL
