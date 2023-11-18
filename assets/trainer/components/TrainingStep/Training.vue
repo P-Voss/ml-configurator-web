@@ -285,6 +285,12 @@ export default {
                 this.stateMessage = ""
                 this.$emit('executed-task', response.data.validTraining)
                 await this.loadTasks()
+            } else {
+                this.activeTask.state = "COMPLETED"
+                this.state = "INIT"
+                this.stateMessage = ""
+                this.$emit('executed-task', response.data.validTraining)
+                await this.loadTasks()
             }
         },
         async loadTasks() {
