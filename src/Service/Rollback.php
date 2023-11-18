@@ -85,7 +85,8 @@ class Rollback
         if ($configuration->hyperparameters) {
             $model->setHyperparameters((array) $configuration->hyperparameters);
         }
-        $model->setUpdatedate(new \DateTime());
+        $model->setUpdatedate(new \DateTime())
+            ->setLatestConfigurationHash($targetTask->getModelHash());
         $this->entityManager->flush();
     }
 

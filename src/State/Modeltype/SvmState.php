@@ -132,13 +132,23 @@ class SvmState extends AbstractState
         return $bestId;
     }
 
-
     public function setModelFile(TrainingPathGenerator $pathGenerator): StateInterface
     {
         $this->model->setModelPath($pathGenerator->getModelFile('joblib'))
             ->setUpdatedate(new \DateTime());
 
         return $this;
+    }
+
+    public function validTraining(): bool
+    {
+        if (!$this->model->getScalerPath()) {
+            return false;
+        }
+        if (!file_exists($this->model->getScalerPath())) {
+            return false;
+        }
+        return parent::validTraining();
     }
 
 }

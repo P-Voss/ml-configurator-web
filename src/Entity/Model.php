@@ -86,6 +86,9 @@ class Model implements \JsonSerializable
     #[ORM\Column(length: 1000, nullable: true)]
     private ?string $scalerPath = null;
 
+    #[ORM\Column(length: 1000, nullable: true)]
+    private ?string $latestConfigurationHash = null;
+
     public function __construct()
     {
         $this->layers = new ArrayCollection();
@@ -494,6 +497,18 @@ class Model implements \JsonSerializable
     public function setScalerPath(?string $scalerPath): static
     {
         $this->scalerPath = $scalerPath;
+
+        return $this;
+    }
+
+    public function getLatestConfigurationHash(): ?string
+    {
+        return $this->latestConfigurationHash;
+    }
+
+    public function setLatestConfigurationHash(?string $latestConfigurationHash): static
+    {
+        $this->latestConfigurationHash = $latestConfigurationHash;
 
         return $this;
     }

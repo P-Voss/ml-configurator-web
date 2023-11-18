@@ -176,6 +176,13 @@ class TrainerController extends AbstractController
         ]);
     }
 
+    /**
+     * @param User $user
+     * @param Request $request
+     * @param ModelRepository $repository
+     * @return JsonResponse
+     *  currently not used
+     */
     #[Route('/trainer/data/update', name: 'app_trainer_data_update', methods: ['POST'])]
     public function update(#[CurrentUser] User $user, Request $request, ModelRepository $repository)
     {
@@ -423,9 +430,18 @@ class TrainerController extends AbstractController
         $task->setEndDatetime(new \DateTime())
             ->setState($newState);
         $this->entityManager->flush();
+        try {
+            $state = AbstractState::getState($task->getModel(), $this->entityManager);
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ]);
+        }
 
         return new JsonResponse([
             'success' => $success,
+            'validTraining' => $state->validTraining(),
         ]);
     }
 
@@ -470,7 +486,6 @@ class TrainerController extends AbstractController
         #[CurrentUser] User $user,
         Request $request,
         TrainingTaskRepository $repository,
-        TrainingPathGenerator $pathGenerator,
     )
     {
         $task = $repository->find($request->get('taskId', 0));
@@ -493,23 +508,20 @@ class TrainerController extends AbstractController
                 'message' => 'can not delete task at this moment',
             ], Response::HTTP_UNAUTHORIZED);
         }
-        $model = $task->getModel();
-        if (file_exists($task->getScriptPath())) {
-            unlink($task->getScriptPath());
+        try {
+            $state = AbstractState::getState($task->getModel(), $this->entityManager);
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ]);
         }
-        if (file_exists($task->getReportPath())) {
-            unlink($task->getReportPath());
-        }
-        if (file_exists($task->getLogPath())) {
-            unlink($task->getLogPath());
-        }
-        $model->removeTrainingTask($task)
-            ->setUpdatedate(new \DateTime());
-        $this->entityManager->remove($task);
+        $state->deleteTrainingTask($task);
         $this->entityManager->flush();
 
         return new JsonResponse([
             'success' => true,
+            'validTraining' => $state->validTraining(),
         ]);
     }
 

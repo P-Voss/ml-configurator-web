@@ -131,4 +131,15 @@ class LinearRegressionState extends AbstractState
         return parent::getBestTrainingId();
     }
 
+    public function validTraining(): bool
+    {
+        if (!$this->model->getScalerPath()) {
+            return false;
+        }
+        if (!file_exists($this->model->getScalerPath())) {
+            return false;
+        }
+        return parent::validTraining();
+    }
+
 }

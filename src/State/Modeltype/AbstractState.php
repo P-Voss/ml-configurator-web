@@ -70,6 +70,39 @@ abstract class AbstractState implements StateInterface
         $this->entityManager->remove($this->model);
     }
 
+    public function deleteTrainingTask(TrainingTask $task)
+    {
+        if (file_exists($task->getScriptPath())) {
+            unlink($task->getScriptPath());
+        }
+        if (file_exists($task->getReportPath())) {
+            unlink($task->getReportPath());
+        }
+        if (file_exists($task->getLogPath())) {
+            unlink($task->getLogPath());
+        }
+
+        $isMostRecentTask = $task->getModelHash() === $this->model->getLatestConfigurationHash();
+        if ($isMostRecentTask) {
+            if (file_exists($this->model->getModelPath() ?? '')) {
+                unlink($this->model->getModelPath());
+            }
+            if (file_exists($this->model->getCheckpointPath() ?? '')) {
+                unlink($this->model->getCheckpointPath());
+            }
+            if (file_exists($this->model->getScalerPath() ?? '')) {
+                unlink($this->model->getScalerPath());
+            }
+            $this->model->setModelPath('')
+                ->setScalerPath('')
+                ->setCheckpointPath('');
+        }
+
+        $this->model->removeTrainingTask($task)
+            ->setUpdatedate(new \DateTime());
+        $this->entityManager->remove($task);
+    }
+
     public function getCodegenerator(): AbstractCodegenerator
     {
         return new Feedforward($this->model);
@@ -270,6 +303,7 @@ abstract class AbstractState implements StateInterface
     public function addTrainingTask(TrainingTask $task): StateInterface
     {
         $this->model->addTrainingTask($task)
+            ->setLatestConfigurationHash($task->getModelHash())
             ->setUpdatedate(new \DateTime());
 
         return $this;
@@ -284,7 +318,9 @@ abstract class AbstractState implements StateInterface
             'validBaseData' => $this->validBaseData(),
             'validArchitecture' => $this->validArchitecture(),
             'validFieldConfiguration' => $this->validFieldConfiguration(),
-            'configurationHash' => md5(json_encode($model)),
+            'validTraining' => $this->validTraining(),
+//            'configurationHash' => md5(json_encode($model)),
+            'configurationHash' => $model->getLatestConfigurationHash(),
         ];
     }
 

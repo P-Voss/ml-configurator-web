@@ -19,6 +19,8 @@ interface StateInterface extends \JsonSerializable, \SplSubject
 
     public function delete();
 
+    public function deleteTrainingTask(TrainingTask $task);
+
     public function setModeltype(ModelTypes $type): StateInterface;
 
     public function getCodegenerator(): AbstractCodegenerator;
@@ -27,9 +29,7 @@ interface StateInterface extends \JsonSerializable, \SplSubject
 
     public function getBestTrainingId(): int;
 
-
     public function setName(string $name);
-
 
     public function setDescription(string $description);
 

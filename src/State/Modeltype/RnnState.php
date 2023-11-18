@@ -141,4 +141,21 @@ class RnnState extends AbstractState
         return $this;
     }
 
+    public function validTraining(): bool
+    {
+        if (!$this->model->getScalerPath()) {
+            return false;
+        }
+        if (!file_exists($this->model->getScalerPath())) {
+            return false;
+        }
+        if (!$this->model->getCheckpointPath()) {
+            return false;
+        }
+        if (!file_exists($this->model->getCheckpointPath())) {
+            return false;
+        }
+        return parent::validTraining();
+    }
+
 }
