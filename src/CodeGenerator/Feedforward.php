@@ -201,7 +201,7 @@ class Feedforward extends AbstractCodegenerator
         $innerLines[] = '';
         $innerLines[] = 'loss = model.evaluate(features_val, target_val)';
         $innerLines[] = 'predictions = model.predict(features_val)';
-        $innerLines[] = 'r2 = r2_score(target_test, predictions)';
+        $innerLines[] = 'r2 = r2_score(target_val, predictions)';
         $innerLines[] = '';
         $innerLines[] = 'end_time = time.time()';
         $innerLines[] = '';
