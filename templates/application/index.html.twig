@@ -4,6 +4,12 @@
 
 {% block javascripts %}
     {{ encore_entry_script_tags('application') }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.2.1/highlight.min.js"></script>
+{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/default.min.css">
 {% endblock %}
 
 {% block body %}
@@ -11,9 +17,9 @@
         <Application
                 model-id="{{ modelId }}"
                 load-model-url="{{ path('app_configurator_loadmodel') }}"
+                load-example-url="{{ path('app_application_example', {id: modelId}) }}"
                 configurator-url="{{ path('app_configurator', {id: modelId}) }}"
                 trainer-url="{{ path('app_trainer', {id: modelId}) }}"
-
                 execute-url="{{ path('app_application_execute') }}"
         ></Application>
     </div>

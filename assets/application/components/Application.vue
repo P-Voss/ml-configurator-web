@@ -5,6 +5,41 @@
 
             <div class="tab-content" id="pills-tabContent" v-if="modelState === 'COMPLETED'">
 
+                <div class="row mb-3 mt-3 justify-content-around">
+                    <div class="col-2">
+                        <div class="h1">Anwendung</div>
+                    </div>
+                </div>
+
+                <div class="row mb-3 mt-3">
+                    <div class="col-12">
+                        <div class="accordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button
+                                        class="accordion-button"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#codeData"
+                                        aria-expanded="true"
+                                        aria-controls="codeData"
+                                        @click="loadExampleCode"
+                                    >
+                                        Beispielcode - Aktuelle Modellkonfiguration
+                                    </button>
+                                </h2>
+                                <div
+                                    id="codeData"
+                                    class="accordion-collapse collapse"
+                                >
+                                    <pre>
+                                        <code class="python" id="source">{{exampleCode}}</code>
+                                    </pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-12">
                         <h2>Modellparameter</h2>
@@ -82,6 +117,7 @@ export default {
     props: {
         modelId: String,
         loadModelUrl: String,
+        loadExampleUrl: String,
         trainerUrl: String,
         configuratorUrl: String,
         executeUrl: String,
@@ -107,6 +143,7 @@ export default {
             },
             result: [],
             message: "",
+            exampleCode: "",
         }
     },
     mounted() {
@@ -125,7 +162,7 @@ export default {
             let loadForm = new FormData()
             loadForm.set('modelId', modelId)
             loadModel(this.loadModelUrl, loadForm)
-                .then(response => {
+                .then(async response => {
                     let data = response.data
                     if (data.success) {
                         this.model.id = modelId
@@ -152,12 +189,27 @@ export default {
                             features.push(field.name)
                         }
                         this.input = features.join(";")
+                        if (this.exampleCode !== "") {
+                            this.loadExampleCode(modelId)
+                        }
                     }
                     this.modelState = "COMPLETED"
                 })
                 .catch(error => {
                     console.log(error)
                 })
+        },
+        async loadExampleCode() {
+            if (this.exampleCode) {
+                return
+            }
+            let result = await ApplicationService.loadExample(this.loadExampleUrl)
+            if (result.data.success) {
+                this.exampleCode = result.data.code
+                document.querySelectorAll('pre code').forEach((el) => {
+                    this.$hljs.initHighlighting()
+                });
+            }
         },
         async apply() {
             this.execState = "PENDING"
