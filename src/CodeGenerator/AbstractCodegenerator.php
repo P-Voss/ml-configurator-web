@@ -85,6 +85,16 @@ abstract class AbstractCodegenerator
         return '';
     }
 
+    public function targetIsText(): bool
+    {
+        foreach ($this->model->getFieldConfigurations() as $fieldConfiguration) {
+            if ($fieldConfiguration->isIsTarget()) {
+                return $fieldConfiguration->getType() === 'text';
+            }
+        }
+        return false;
+    }
+
     protected function getFeatures(): array
     {
         $features = [];

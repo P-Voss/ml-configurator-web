@@ -17,6 +17,18 @@ class Svm extends AbstractCodegenerator
      */
     public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string
     {
+
+        if ($this->targetIsText()) {
+            return $this->getSvcScript($pathGenerator);
+        } else {
+            return $this->getSvrScript($pathGenerator);
+        }
+
+    }
+
+
+    private function getSvrScript(TrainingPathGenerator $pathGenerator): string
+    {
         $targetName = htmlentities($this->getTargetName());
 
         $textFeatures = array_map('htmlentities', $this->getTextFeatures());
@@ -24,7 +36,7 @@ class Svm extends AbstractCodegenerator
         if ($targetName === '') {
             throw new \Exception('invalid field configuration');
         }
-        $modelPath = $pathGenerator->getModelFile('joblib');
+        $modelPath = $this->model->getModelPath();
         $reportFile = $pathGenerator->getReportFile();
 
         $hyperparameter = $this->model->getHyperparameters();
@@ -45,7 +57,9 @@ class Svm extends AbstractCodegenerator
         $lines[] = "import matplotlib.pyplot as plt";
         $lines[] = "import numpy as np";
         $lines[] = "from sklearn.model_selection import train_test_split";
+
         $lines[] = "from sklearn.svm import SVR";
+
         $lines[] = "from sklearn.metrics import mean_squared_error";
         $lines[] = "from sklearn.inspection import permutation_importance";
         $lines[] = "from joblib import dump";
@@ -71,7 +85,7 @@ class Svm extends AbstractCodegenerator
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            'data = pd.read_csv("%s", delimiter=";", header=0)',
+            'data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)',
             $this->getDataPath($pathGenerator)
         );
         $innerLines[] = sprintf('target = data["%s"]',
@@ -138,6 +152,7 @@ class Svm extends AbstractCodegenerator
             $hyperparameter['shrinking'] ? 'True' : 'False',
             $hyperparameter['tolerance']
         );
+
         $innerLines[] = '';
         $innerLines[] = '# initiates training';
         $innerLines[] = 'svm_model.fit(features_train, target_train)';
@@ -169,16 +184,23 @@ class Svm extends AbstractCodegenerator
         $innerLines[] = 'residuals_plot = plot_to_base64()';
         $innerLines[] = 'plt.close()';
 
+        $innerLines[] = '';
+        $innerLines[] = 'if hasattr(encoder, "get_feature_names"):';
+        $innerLines[] = '    categorical_feature_names = encoder.get_feature_names(categorical_columns).tolist()';
+        $innerLines[] = 'else:';
+        $innerLines[] = '    categorical_feature_names = [f"{col}_{val}" for col in categorical_columns for val in categories]';
+        $innerLines[] = 'combined_feature_names = categorical_feature_names + number_features.columns.tolist()';
+        $innerLines[] = '';
 
         if ($this->model->getSvmConfiguration()->getKernel() === 'linear') {
             $innerLines[] = 'feature_importance = svm_model.coef_[0]';
-            $innerLines[] = 'feature_importance_dict = dict(zip(features.columns, feature_importance))';
+            $innerLines[] = 'feature_importance_dict = dict(zip(combined_feature_names, feature_importance))';
         } else {
             $innerLines[] = 'pfi_result = permutation_importance(svm_model, features_val, target_val, n_repeats=30, random_state=42)';
             $innerLines[] = 'sorted_idx = pfi_result.importances_mean.argsort()';
             $innerLines[] = 'feature_importance_dict = {}';
             $innerLines[] = 'for idx in sorted_idx:';
-            $innerLines[] = '    feature_importance_dict[features.columns[idx]] = pfi_result.importances_mean[idx]';
+            $innerLines[] = '    feature_importance_dict[combined_feature_names[idx]] = pfi_result.importances_mean[idx]';
         }
 
         $innerLines[] = 'end_time = time.time()';
@@ -187,10 +209,13 @@ class Svm extends AbstractCodegenerator
         $innerLines[] = '';
         $innerLines[] = '# logging the result';
         $innerLines[] = 'results = {';
+        $innerLines[] = '    "isText": False,';
         $innerLines[] = '    "mse_val": mse,';
+        $innerLines[] = '    "mse_test": 0,';
+        $innerLines[] = '    "accuracy_val": 0,';
+        $innerLines[] = '    "accuracy_test": 0,';
         $innerLines[] = '    "scatterplot_val": scatterplot,';
         $innerLines[] = '    "residuals_val": residuals_plot,';
-        $innerLines[] = '    "mse_test": 0,';
         $innerLines[] = '    "scatterplot_test": "",';
         $innerLines[] = '    "residuals_test": "",';
         $innerLines[] = '    "feature_importance": feature_importance_dict,';
@@ -225,6 +250,170 @@ class Svm extends AbstractCodegenerator
             $innerLines[] = 'results["mse_test"] = mse_test';
             $innerLines[] = 'results["scatterplot_test"] = scatterplot_test';
             $innerLines[] = 'results["residuals_test"] = residuals_test';
+        }
+
+        $innerLines[] = sprintf('with open("%s", "w") as outfile:', $reportFile);
+        $innerLines[] = '    json.dump(results, outfile, indent=4)';
+
+        $formattedInnerLines = array_map(function (string $line) {
+            return '    ' . $line;
+        }, $innerLines);
+
+        $endLines = [];
+        $endLines[] = 'except Exception as e:';
+        $endLines[] = '    logging.error("Exception occurred", exc_info=True)';
+        $endLines[] = '    sys.exit(500)';
+
+        $result = implode(PHP_EOL, $lines) . PHP_EOL
+            . implode(PHP_EOL, $formattedInnerLines) . PHP_EOL
+            . implode(PHP_EOL, $endLines);
+        return $result;
+    }
+
+
+    private function getSvcScript(TrainingPathGenerator $pathGenerator): string
+    {
+        $targetName = htmlentities($this->getTargetName());
+
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
+        if ($targetName === '') {
+            throw new \Exception('invalid field configuration');
+        }
+        $modelPath = $this->model->getModelPath();
+        $reportFile = $pathGenerator->getReportFile();
+
+        $hyperparameter = $this->model->getHyperparameters();
+
+        $innerLines = [];
+
+        $lines = [];
+        $lines[] = '# deaktiviert Info-Meldungen von Tensorflow';
+        $lines[] = 'import os';
+        $lines[] = 'os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"';
+        $lines[] = '';
+        $lines[] = "import time";
+        $lines[] = "import logging";
+        $lines[] = "import base64";
+        $lines[] = "from io import BytesIO";
+        $lines[] = "import json";
+        $lines[] = "import pandas as pd";
+        $lines[] = "import matplotlib.pyplot as plt";
+        $lines[] = "import numpy as np";
+        $lines[] = "from sklearn.model_selection import train_test_split";
+
+        $lines[] = "from sklearn.svm import SVC";
+        $lines[] = "from sklearn.metrics import accuracy_score";
+
+        $lines[] = "from joblib import dump";
+        $lines[] = "from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder";
+        $lines[] = '';
+        $lines[] = '# Logging-Konfiguration';
+        $lines[] = sprintf(
+            'logging.basicConfig(filename="%s", level=logging.ERROR)',
+            $pathGenerator->getErrorFile()
+        );
+
+        $lines[] = 'try:';
+
+        $innerLines[] = 'start_time = time.time()';
+        $innerLines[] = '';
+        $innerLines[] = sprintf(
+            'data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)',
+            $this->getDataPath($pathGenerator)
+        );
+        $innerLines[] = sprintf('target = data["%s"]',
+            $targetName
+        );
+
+        $innerLines[] = sprintf(
+            'categorical_columns = [%s]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
+        );
+        $innerLines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+
+        $innerLines[] = '';
+        $innerLines[] = 'label_encoder = LabelEncoder()';
+        $innerLines[] = 'target_encoded = label_encoder.fit_transform(target)';
+        $innerLines[] = sprintf("dump(label_encoder, '%s')", $this->model->getEncoderPath());
+        $innerLines[] = '';
+
+        $innerLines[] = 'scaler = StandardScaler()';
+        $innerLines[] = 'number_features_scaled = scaler.fit_transform(number_features)';
+        $innerLines[] = sprintf(
+            "dump(scaler, '%s')",
+            $this->model->getScalerPath()
+        );
+        $innerLines[] = 'features = number_features_scaled';
+        $innerLines[] = '';
+        if ((int) $hyperparameter['testPercentage'] > 0) {
+            $innerLines[] = sprintf(
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
+            $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
+            $innerLines[] = sprintf(
+                'features_val, features_test, target_val, target_test = train_test_split(features_temp, target_temp, test_size=%s, random_state=42)',
+                $testPercentage
+            );
+        } else {
+            $innerLines[] = sprintf(
+                'features_train, features_val, target_train, target_val = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
+        }
+
+        $innerLines[] = '';
+        $innerLines[] = '# initiates svm model';
+        $innerLines[] = sprintf(
+            'svm_model = SVC(kernel="%s", C=%s, degree=%s, shrinking=%s, tol=%s)',
+            $this->model->getSvmConfiguration()->getKernel(),
+            $this->model->getSvmConfiguration()->getC() / 100,
+            $this->model->getSvmConfiguration()->getDegree(),
+            $hyperparameter['shrinking'] ? 'True' : 'False',
+            $hyperparameter['tolerance']
+        );
+
+        $innerLines[] = '';
+        $innerLines[] = '# initiates training';
+        $innerLines[] = 'svm_model.fit(features_train, target_train)';
+        $innerLines[] = '';
+        $innerLines[] = '# runs prediction against validation data';
+        $innerLines[] = 'target_pred = svm_model.predict(features_val)';
+        $innerLines[] = '';
+        $innerLines[] = '# calculates prediction accuracy';
+        $innerLines[] = 'accuracy_val = accuracy_score(target_val, target_pred)';
+
+
+        $innerLines[] = 'end_time = time.time()';
+        $innerLines[] = '# saving model';
+        $innerLines[] = sprintf('dump(svm_model, "%s")', $modelPath);
+        $innerLines[] = '';
+        $innerLines[] = '# logging the result';
+        $innerLines[] = 'results = {';
+        $innerLines[] = '    "isText": True,';
+        $innerLines[] = '    "mse_val": 0,';
+        $innerLines[] = '    "mse_test": 0,';
+        $innerLines[] = '    "accuracy_val": accuracy_val,';
+        $innerLines[] = '    "accuracy_test": 0,';
+        $innerLines[] = '    "scatterplot_val": "",';
+        $innerLines[] = '    "residuals_val": "",';
+        $innerLines[] = '    "scatterplot_test": "",';
+        $innerLines[] = '    "residuals_test": "",';
+        $innerLines[] = '    "feature_importance": {},';
+        $innerLines[] = '    "duration": end_time - start_time';
+        $innerLines[] = '}';
+
+        if ((int) $hyperparameter['testPercentage'] > 0) {
+            $innerLines[] = '';
+            $innerLines[] = '# runs prediction against testdata';
+            $innerLines[] = 'test_pred = svm_model.predict(features_test)';
+            $innerLines[] = 'accuracy_test = accuracy_score(target_test, test_pred)';
+            $innerLines[] = '';
+            $innerLines[] = 'results["accuracy_test"] = accuracy_test';
         }
 
         $innerLines[] = sprintf('with open("%s", "w") as outfile:', $reportFile);
@@ -287,7 +476,7 @@ class Svm extends AbstractCodegenerator
 
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
-        $innerLines[] = 'data = pd.read_csv("__DATA_FILE__", delimiter=";", header=0)';
+        $innerLines[] = 'data = pd.read_csv("__DATA_FILE__", delimiter=";", header=0, error_bad_lines=False)';
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
         );
@@ -395,6 +584,58 @@ class Svm extends AbstractCodegenerator
 
     public function generateApplicationScript(string $sourceFile, string $targetFile): string
     {
+        if ($this->targetIsText()) {
+            return $this->getSvcApplication($sourceFile, $targetFile);
+        } else {
+            return $this->getSvrApplication($sourceFile, $targetFile);
+        }
+    }
+
+    private function getSvcApplication(string $sourceFile, string $targetFile): string {
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
+
+        $lines = [];
+        $lines[] = '# deaktiviert Info-Meldungen von Tensorflow';
+        $lines[] = 'import os';
+        $lines[] = 'os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"';
+        $lines[] = '';
+        $lines[] = "from joblib import load";
+        $lines[] = "from sklearn.preprocessing import StandardScaler, LabelEncoder";
+        $lines[] = "import numpy as np";
+        $lines[] = "import pandas as pd";
+        $lines[] = '';
+        $lines[] = '# loading model';
+        $lines[] = sprintf('model = load("%s")', $this->model->getModelPath());
+        $lines[] = '# loading scaler';
+        $lines[] = sprintf('scaler = load("%s")', $this->model->getScalerPath());
+        $lines[] = '# loading label encoder';
+        $lines[] = sprintf('label_encoder = load("%s")', $this->model->getEncoderPath());
+        $lines[] = '';
+        $lines[] = '# loading source';
+        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)', $sourceFile);
+        $lines[] = '';
+        $lines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+        $lines[] = '';
+        $lines[] = 'number_features_scaled = scaler.transform(number_features)';
+        $lines[] = 'features = number_features_scaled';
+        $lines[] = '';
+        $lines[] = '# executing predictions';
+        $lines[] = 'predictions = model.predict(features)';
+        $lines[] = '# converting predictions back to labels';
+        $lines[] = 'predictions_labels = label_encoder.inverse_transform(predictions)';
+        $lines[] = '';
+        $lines[] = '# saving predictions';
+        $lines[] = 'result_df = pd.DataFrame(predictions_labels, columns=["Prediction"])';
+        $lines[] = sprintf('result_df.to_csv("%s", index=False)', $targetFile);
+        $result = implode(PHP_EOL, $lines);
+
+        return $result;
+    }
+
+    private function getSvrApplication(string $sourceFile, string $targetFile): string {
         $textFeatures = array_map('htmlentities', $this->getTextFeatures());
         $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
 
@@ -418,7 +659,7 @@ class Svm extends AbstractCodegenerator
 
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0)', $sourceFile);
+        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)', $sourceFile);
 
         $lines[] = '';
         $lines[] = sprintf(
@@ -469,7 +710,7 @@ class Svm extends AbstractCodegenerator
 
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0)';
+        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0, error_bad_lines=False)';
 
         $lines[] = '';
         $lines[] = sprintf(

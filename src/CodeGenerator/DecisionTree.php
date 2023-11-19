@@ -71,7 +71,7 @@ class DecisionTree extends AbstractCodegenerator
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            'data = pd.read_csv("%s", delimiter=";", header=0)',
+            'data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)',
             $this->getDataPath($pathGenerator),
         );
         $innerLines[] = sprintf('target = data["%s"]',
@@ -250,7 +250,7 @@ class DecisionTree extends AbstractCodegenerator
 
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
-        $innerLines[] = 'data = pd.read_csv("__CSV_LOG_FILE__", delimiter=";", header=0)';
+        $innerLines[] = 'data = pd.read_csv("__CSV_LOG_FILE__", delimiter=";", header=0, error_bad_lines=False)';
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
         );
@@ -354,7 +354,7 @@ class DecisionTree extends AbstractCodegenerator
 
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = sprintf('source = pd.read_csv("%s")', $sourceFile);
+        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)', $sourceFile);
         $lines[] = '# loading encoder';
         $lines[] = sprintf('encoder = load("%s")', $this->model->getEncoderPath());
 
@@ -404,7 +404,7 @@ class DecisionTree extends AbstractCodegenerator
 
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0)';
+        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0, error_bad_lines=False)';
 
         $lines[] = '';
         $lines[] = sprintf(

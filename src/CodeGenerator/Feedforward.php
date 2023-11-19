@@ -112,7 +112,7 @@ class Feedforward extends AbstractCodegenerator
 
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            'data = pd.read_csv("%s", delimiter=";", header=0)',
+            'data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)',
             $this->getDataPath($pathGenerator)
         );
         $innerLines[] = sprintf('target = data["%s"]',
@@ -317,7 +317,7 @@ class Feedforward extends AbstractCodegenerator
         $innerLines[] = "model = Sequential()";
 
         $innerLines[] = '';
-        $innerLines[] = 'data = pd.read_csv("__CSV_DATA_FILE__", delimiter=";", header=0)';
+        $innerLines[] = 'data = pd.read_csv("__CSV_DATA_FILE__", delimiter=";", header=0, error_bad_lines=False)';
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
         );
@@ -458,7 +458,7 @@ class Feedforward extends AbstractCodegenerator
 
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0)', $sourceFile);
+        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)', $sourceFile);
 
         $lines[] = '';
         $lines[] = sprintf(
@@ -510,7 +510,7 @@ class Feedforward extends AbstractCodegenerator
 
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0)';
+        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0, error_bad_lines=False)';
 
         $lines[] = '';
         $lines[] = sprintf(
