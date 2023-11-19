@@ -2,10 +2,10 @@
     <div>
         <ul class="nav nav-pills mb-3 justify-content-center nav-fill d-none d-lg-flex" id="trainer-tab-lg" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link bg-success text-light"
+                <a class="nav-link d-flex align-items-center bg-success text-light"
                    :href="configuratorUrl" role="tab"
                 >
-                    Konfigurator
+                    <span class="material-symbols-outlined">settings</span>Konfigurator
                 </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -38,7 +38,7 @@
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
-                   :class="{'active': currentStep === 'TRAINING', 'disabled' : !initStepCompleted|| !hyperparameterStepCompleted}"
+                   :class="{'active': currentStep === 'TRAINING', 'disabled' : !initStepCompleted|| !hyperparameterStepCompleted, 'bg-success text-light': trainingStepCompleted}"
                    @click="() => {
                        this.$emit('set-step', 'TRAINING')
                        currentStep = 'TRAINING'
@@ -48,10 +48,10 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link"
+                <a class="nav-link d-flex align-items-center"
                    :class="{'disabled' : !initStepCompleted || !hyperparameterStepCompleted || !trainingStepCompleted}"
                    id="trainer-execute-tab-lg" :href="executorUrl" role="tab" aria-controls="trainer-execute" aria-selected="false">
-                    Anwendung
+                    <span class="material-symbols-outlined">keyboard_double_arrow_right</span>Anwendung
                 </a>
             </li>
         </ul>
@@ -59,10 +59,10 @@
 
         <ul class="nav nav-pills mb-3 justify-content-center flex-column nav-fill d-flex d-lg-none gap-2" id="trainer-tab" role="tablist">
             <li class="nav-item" role="presentation">
-                <a class="nav-link bg-success text-light"
+                <a class="nav-link d-flex align-items-center bg-success text-light"
                    id="trainer-data-prep-tab" :href="configuratorUrl" role="tab" aria-controls="trainer-data-prep"
                 >
-                    Konfigurator
+                    <span class="material-symbols-outlined">settings</span>Konfigurator
                 </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -95,7 +95,7 @@
             </li>
             <li class="nav-item" role="presentation">
                 <a class="nav-link"
-                   :class="{'active': currentStep === 'TRAINING', 'disabled' : !initStepCompleted || !hyperparameterStepCompleted}"
+                   :class="{'active': currentStep === 'TRAINING', 'disabled' : !initStepCompleted || !hyperparameterStepCompleted, 'bg-success text-light': trainingStepCompleted}"
                    @click="() => {
                        this.$emit('set-step', 'TRAINING')
                        currentStep = 'TRAINING'
@@ -111,7 +111,7 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link"
+                <a class="nav-link d-flex align-items-center"
                    :class="{'disabled' : !initStepCompleted || !hyperparameterStepCompleted || !trainingStepCompleted}"
                    id="trainer-execute-tab"
                    :href="executorUrl"
@@ -119,7 +119,7 @@
                    aria-controls="trainer-execute"
                    aria-selected="false"
                 >
-                    Anwendung
+                    <span class="material-symbols-outlined">keyboard_double_arrow_right</span>Anwendung
                 </a>
             </li>
         </ul>

@@ -24,17 +24,17 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link"
-                   :class="{'disabled' : !initStepCompleted}"
+                <a class="nav-link d-flex align-items-center"
+                   :class="{'disabled' : !initStepCompleted, 'bg-success text-light': trainingStepCompleted}"
                    id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
-                    {{$t("navigation.training")}}
+                    <span class="material-symbols-outlined">model_training</span>{{$t("navigation.training")}}
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link"
+                <a class="nav-link d-flex align-items-center"
                    :class="{'disabled' : !trainingStepCompleted}"
                    id="pills-hyperparameter-tab" :href="executorUrl" role="tab" aria-controls="pills-hyperparameter">
-                    {{$t("navigation.execute")}}
+                    <span class="material-symbols-outlined">keyboard_double_arrow_right</span>{{$t("navigation.execute")}}
                 </a>
             </li>
         </ul>
@@ -58,17 +58,17 @@
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link"
-                   :class="{'disabled' : !initStepCompleted}"
+                <a class="nav-linkd-flex align-items-center"
+                   :class="{'disabled' : !initStepCompleted, 'bg-success text-light': trainingStepCompleted}"
                    id="pills-hyperparameter-tab" :href="trainerUrl" role="tab" aria-controls="pills-hyperparameter">
-                    {{$t("navigation.training")}}
+                    <span class="material-symbols-outlined">model_training</span>{{$t("navigation.training")}}
                 </a>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link"
+                <a class="nav-link d-flex align-items-center"
                    :class="{'disabled' : !trainingStepCompleted}"
                    id="pills-hyperparameter-tab" :href="executorUrl" role="tab" aria-controls="pills-hyperparameter">
-                    {{$t("navigation.execute")}}
+                    <span class="material-symbols-outlined">keyboard_double_arrow_right</span>{{$t("navigation.execute")}}
                 </a>
             </li>
         </ul>
