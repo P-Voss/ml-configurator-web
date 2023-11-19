@@ -122,7 +122,8 @@ class ApplicationController extends AbstractController
         $success = true;
         $result = [];
         if (!$process->isSuccessful()) {
-            $message = $process->getErrorOutput();
+//            $message = $process->getErrorOutput();
+            $message = "Error during execution";
             $success = false;
         } else {
             if (file_exists($pathGenerator->getExecResultFile())) {
@@ -138,6 +139,45 @@ class ApplicationController extends AbstractController
             'success' => $success,
             'message' => $message,
             'result' => $result,
+        ]);
+    }
+
+
+    #[Route('/application/example/{id}', name: 'app_application_example', methods: ['GET'])]
+    public function example(
+        #[CurrentUser] User $user,
+        ModelRepository $repository,
+        int $id
+    )
+    {
+        $model = $repository->find($id);
+        if (!$model) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid modelId',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $state = AbstractState::getState($model, $this->entityManager);
+        } catch (\Exception $exception) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid input',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        if (!$state->validTraining()) {
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'invalid input',
+            ], Response::HTTP_UNAUTHORIZED);
+        }
+        $codeGenerator = $state->getCodegenerator();
+        $script = $codeGenerator->getExampleApplicationScript();
+
+        return new JsonResponse([
+            'success' => true,
+            'code' => $script,
         ]);
     }
 

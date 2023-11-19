@@ -115,6 +115,7 @@ class SvmState extends AbstractState
         }
         $bestId = 0;
         $lowestScore = PHP_INT_MAX;
+        $highestAccuracy = 0;
         foreach ($this->model->getTrainingTasks() as $task) {
             if ($task->getState() !== TrainingTask::STATE_COMPLETED || !$task->getReportPath()) {
                 continue;
@@ -123,9 +124,15 @@ class SvmState extends AbstractState
                 continue;
             }
             $report = json_decode(file_get_contents($task->getReportPath()));
-            if ($report->mse < $lowestScore) {
-                $lowestScore = $report->mse;
+            if ($report->mse_val > 0 && $report->mse_val < $lowestScore) {
+                $lowestScore = $report->mse_val;
                 $bestId = $task->getId();
+                continue;
+            }
+            if ($report->accuracy_val > 0 && $report->accuracy_val > $highestAccuracy) {
+                $highestAccuracy = $report->accuracy_val;
+                $bestId = $task->getId();
+                continue;
             }
         }
 

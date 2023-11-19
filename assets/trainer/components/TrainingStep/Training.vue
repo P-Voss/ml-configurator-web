@@ -27,9 +27,9 @@
                             id="codeData"
                             class="accordion-collapse collapse"
                         >
-                        <pre>
-                            <code class="python" id="source">{{code}}</code>
-                        </pre>
+                            <pre>
+                                <code class="python" id="source">{{code}}</code>
+                            </pre>
                         </div>
                     </div>
                 </div>

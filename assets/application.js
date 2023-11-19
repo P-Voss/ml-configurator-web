@@ -9,6 +9,9 @@ const app = createApp({
         Application
     }
 })
+if (hljs) {
+    app.config.globalProperties.$hljs = hljs
+}
 
 app.mount('#app');
 app.use(createI18n({

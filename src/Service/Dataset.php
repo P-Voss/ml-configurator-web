@@ -325,7 +325,7 @@ class Dataset
 
         $field = new FieldConfiguration();
         $field->setName('class')
-            ->setType('number')
+            ->setType('text')
             ->setIsIgnored(false)
             ->setIsTarget(true);
         $fields[] = $field;
@@ -381,7 +381,7 @@ class Dataset
 
         $field = new FieldConfiguration();
         $field->setName('class')
-            ->setType('number')
+            ->setType('text')
             ->setIsIgnored(false)
             ->setIsTarget(true);
         $fields[] = $field;

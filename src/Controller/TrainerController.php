@@ -353,10 +353,6 @@ class TrainerController extends AbstractController
         $codegenerator = $state->getCodegenerator();
 
         try {
-            $script = $codegenerator->generateTrainingScript($pathGenerator);
-
-            file_put_contents($pathGenerator->getPythonFile(), $script);
-
             $modelData = json_encode($model);
             $task = new TrainingTask();
             $task->setCreationDatetime(new \DateTime())
@@ -376,6 +372,8 @@ class TrainerController extends AbstractController
 
             $this->entityManager->flush();
 
+            $script = $codegenerator->generateTrainingScript($pathGenerator);
+            file_put_contents($pathGenerator->getPythonFile(), $script);
         } catch (\Exception $exception) {
             dd($exception);
         }
