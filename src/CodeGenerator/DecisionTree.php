@@ -355,6 +355,8 @@ class DecisionTree extends AbstractCodegenerator
         $lines[] = '';
         $lines[] = '# loading source';
         $lines[] = sprintf('source = pd.read_csv("%s")', $sourceFile);
+        $lines[] = '# loading encoder';
+        $lines[] = sprintf('encoder = load("%s")', $this->model->getEncoderPath());
 
         $lines[] = '';
         $lines[] = sprintf(
@@ -366,7 +368,6 @@ class DecisionTree extends AbstractCodegenerator
             implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
         );
         $lines[] = '';
-        $lines[] = 'encoder = OneHotEncoder(sparse=False)';
         $lines[] = 'text_features_encoded = encoder.fit_transform(text_features)';
         $lines[] = 'features = np.concatenate([text_features_encoded, number_features], axis=1)';
 
@@ -378,6 +379,54 @@ class DecisionTree extends AbstractCodegenerator
         $lines[] = '# saving predictions';
         $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
         $lines[] = sprintf('result_df.to_csv("%s", index=False)', $targetFile);
+        $result = implode(PHP_EOL, $lines);
+
+        return $result;
+    }
+
+    public function getExampleApplicationScript(): string
+    {
+        $textFeatures = array_map('htmlentities', $this->getTextFeatures());
+        $numericalFeatures = array_map('htmlentities', $this->getNumericalFeatures());
+
+        $lines = [];
+        $lines[] = '';
+        $lines[] = "from joblib import load";
+        $lines[] = "from sklearn.preprocessing import OneHotEncoder";
+        $lines[] = "import numpy as np";
+        $lines[] = "import pandas as pd";
+
+        $lines[] = '';
+        $lines[] = '# loading model';
+        $lines[] = 'model = load("__MODEL_FILE__")';
+        $lines[] = '# loading encoder';
+        $lines[] = 'encoder = load("__ENCODER_FILE__")';
+
+        $lines[] = '';
+        $lines[] = '# loading source';
+        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0)';
+
+        $lines[] = '';
+        $lines[] = sprintf(
+            'text_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $textFeatures))
+        );
+        $lines[] = sprintf(
+            'number_features = data[[%s]]',
+            implode(', ', array_map(function (string $name) { return '"' . $name . '"'; }, $numericalFeatures))
+        );
+        $lines[] = '';
+        $lines[] = 'text_features_encoded = encoder.transform(text_features)';
+        $lines[] = 'features = np.concatenate([text_features_encoded, number_features], axis=1)';
+
+        $lines[] = '';
+        $lines[] = '# executing predictions';
+        $lines[] = 'predictions = model.predict(features)';
+
+        $lines[] = '';
+        $lines[] = '# saving predictions';
+        $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        $lines[] = 'result_df.to_csv("__TARGET_CSV_FILE__", index=False)';
         $result = implode(PHP_EOL, $lines);
 
         return $result;

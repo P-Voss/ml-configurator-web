@@ -18,10 +18,9 @@ abstract class AbstractCodegenerator
 
     abstract public function generateTrainingScript(TrainingPathGenerator $pathGenerator): string;
 
-    /**
-     * @return string
-     */
     abstract public function getExampleScript(): string;
+
+    abstract public function getExampleApplicationScript(): string;
 
     abstract public function generateApplicationScript(string $sourceFile, string $targetFile): string;
 
