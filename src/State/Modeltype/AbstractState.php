@@ -313,6 +313,14 @@ abstract class AbstractState implements StateInterface
         return $this;
     }
 
+    public function setLabelEncoderFile(TrainingPathGenerator $pathGenerator): StateInterface
+    {
+        $this->model->setLabelEncoderPath($pathGenerator->getLabelEncoderFile('pkl'))
+            ->setUpdatedate(new \DateTime());
+
+        return $this;
+    }
+
 
     public function addTrainingTask(TrainingTask $task): StateInterface
     {

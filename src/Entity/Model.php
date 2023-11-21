@@ -93,6 +93,9 @@ class Model implements \JsonSerializable
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $encoderPath = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $labelEncoderPath = null;
+
     public function __construct()
     {
         $this->layers = new ArrayCollection();
@@ -525,6 +528,18 @@ class Model implements \JsonSerializable
     public function setEncoderPath(?string $encoderPath): static
     {
         $this->encoderPath = $encoderPath;
+
+        return $this;
+    }
+
+    public function getLabelEncoderPath(): ?string
+    {
+        return $this->labelEncoderPath;
+    }
+
+    public function setLabelEncoderPath(?string $labelEncoderPath): static
+    {
+        $this->labelEncoderPath = $labelEncoderPath;
 
         return $this;
     }

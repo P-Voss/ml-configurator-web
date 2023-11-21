@@ -338,7 +338,7 @@ class Svm extends AbstractCodegenerator
         $innerLines[] = '';
         $innerLines[] = 'label_encoder = LabelEncoder()';
         $innerLines[] = 'target_encoded = label_encoder.fit_transform(target)';
-        $innerLines[] = sprintf("dump(label_encoder, '%s')", $this->model->getEncoderPath());
+        $innerLines[] = sprintf("dump(label_encoder, '%s')", $this->model->getLabelEncoderPath());
         $innerLines[] = '';
 
         $innerLines[] = 'scaler = StandardScaler()';

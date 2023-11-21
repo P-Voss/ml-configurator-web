@@ -89,6 +89,11 @@ class TrainingPathGenerator
         return $this->scalerDir . 'encoder_' . $this->lookup . '.' . $extension;
     }
 
+    public function getLabelEncoderFile(string $extension): string
+    {
+        return $this->scalerDir . 'labelEncoder_' . $this->lookup . '.' . $extension;
+    }
+
     public function getPythonFile(): string
     {
         return $this->getFilepath($this->trainingPythonDir, 'script', 'py');
