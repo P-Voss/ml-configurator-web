@@ -27,7 +27,6 @@ class DecisionTree extends AbstractCodegenerator
         }
         $conf = $this->model->getDecisiontreeConfiguration();
         $hyperparameter = $this->model->getHyperparameters();
-        $split = $hyperparameter['testPercentage'] / ($hyperparameter['testPercentage'] + $hyperparameter['validationPercentage']);
 
         $innerLines = [];
 
@@ -51,6 +50,11 @@ class DecisionTree extends AbstractCodegenerator
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from sklearn.preprocessing import OneHotEncoder";
         $lines[] = "from joblib import dump";
+
+        if ($this->targetIsText()) {
+            $lines[] = 'from sklearn.preprocessing import LabelEncoder';
+        }
+
         $lines[] = '';
         $lines[] = '# Logging-Konfiguration';
         $lines[] = sprintf(
@@ -77,6 +81,14 @@ class DecisionTree extends AbstractCodegenerator
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
         );
+
+        if ($this->targetIsText()) {
+            $innerLines[] = 'label_encoder = LabelEncoder()';
+            $innerLines[] = 'target_encoded = label_encoder.fit_transform(target)';
+            $innerLines[] = sprintf("dump(label_encoder, '%s')", $this->model->getLabelEncoderPath());
+        } else {
+            $innerLines[] = 'target_encoded = target';
+        }
 
         $innerLines[] = sprintf(
             'categorical_columns = [%s]',
@@ -109,7 +121,7 @@ class DecisionTree extends AbstractCodegenerator
 
         if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = sprintf(
-                'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=%s, random_state=42)',
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
                 1 - ($hyperparameter['trainingPercentage'] / 100)
             );
             $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
@@ -119,7 +131,7 @@ class DecisionTree extends AbstractCodegenerator
             );
         } else {
             $innerLines[] = sprintf(
-                'features_train, features_val, target_train, target_val = train_test_split(features, target, test_size=%s, random_state=42)',
+                'features_train, features_val, target_train, target_val = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
                 1 - ($hyperparameter['trainingPercentage'] / 100)
             );
         }
@@ -234,6 +246,10 @@ class DecisionTree extends AbstractCodegenerator
         $lines[] = "from sklearn.metrics import accuracy_score, classification_report";
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from joblib import dump";
+
+        if ($this->targetIsText()) {
+            $lines[] = 'from sklearn.preprocessing import LabelEncoder';
+        }
         $lines[] = '';
         $lines[] = '# Logging-Konfiguration';
         $lines[] = 'logging.basicConfig(filename="__ERROR_LOG_FILE__", level=logging.ERROR)';
@@ -255,6 +271,14 @@ class DecisionTree extends AbstractCodegenerator
             $targetName
         );
 
+        if ($this->targetIsText()) {
+            $innerLines[] = 'label_encoder = LabelEncoder()';
+            $innerLines[] = 'target_encoded = label_encoder.fit_transform(target)';
+            $innerLines[] = "dump(label_encoder, '__LABEL_ENCODER_FILE__')";
+        } else {
+            $innerLines[] = 'target_encoded = target';
+        }
+
         $innerLines[] = sprintf(
             'features = data[[%s]]',
             implode(
@@ -264,15 +288,22 @@ class DecisionTree extends AbstractCodegenerator
                 }, $features)
             )
         );
-        $innerLines[] = 'train_size = ' . $hyperparameter['trainingPercentage'] / 100;
-        $innerLines[] = 'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=1-train_size)';
-        if ($split > 0) {
+
+        if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = sprintf(
-                'features_val, _, target_val, _ = train_test_split(features_temp, target_temp, test_size=%s)',
-                $split
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
+            $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
+            $innerLines[] = sprintf(
+                'features_val, features_test, target_val, target_test = train_test_split(features_temp, target_temp, test_size=%s, random_state=42)',
+                $testPercentage
             );
         } else {
-            $innerLines[] = 'features_val, target_val = features_temp, target_temp';
+            $innerLines[] = sprintf(
+                'features_train, features_val, target_train, target_val = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
+                1 - ($hyperparameter['trainingPercentage'] / 100)
+            );
         }
 
         $innerLines[] = '';
@@ -352,6 +383,11 @@ class DecisionTree extends AbstractCodegenerator
         $lines[] = '# loading model';
         $lines[] = sprintf('model = load("%s")', $this->model->getModelPath());
 
+        if ($this->targetIsText()) {
+            $lines[] = '# loading label encoder';
+            $lines[] = sprintf('label_encoder = load("%s")', $this->model->getLabelEncoderPath());
+        }
+
         $lines[] = '';
         $lines[] = '# loading source';
         $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)', $sourceFile);
@@ -375,9 +411,17 @@ class DecisionTree extends AbstractCodegenerator
         $lines[] = '# executing predictions';
         $lines[] = 'predictions = model.predict(features)';
 
-        $lines[] = '';
-        $lines[] = '# saving predictions';
-        $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        if ($this->targetIsText()) {
+            $lines[] = '# converting predictions back to labels';
+            $lines[] = 'predictions_labels = label_encoder.inverse_transform(predictions)';
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions_labels, columns=["Prediction"])';
+        } else {
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        }
         $lines[] = sprintf('result_df.to_csv("%s", index=False)', $targetFile);
         $result = implode(PHP_EOL, $lines);
 
@@ -399,6 +443,10 @@ class DecisionTree extends AbstractCodegenerator
         $lines[] = '';
         $lines[] = '# loading model';
         $lines[] = 'model = load("__MODEL_FILE__")';
+        if ($this->targetIsText()) {
+            $lines[] = '# loading label encoder';
+            $lines[] = 'label_encoder = load("__LABEL_ENCODER_FILE__")';
+        }
         $lines[] = '# loading encoder';
         $lines[] = 'encoder = load("__ENCODER_FILE__")';
 
@@ -423,9 +471,17 @@ class DecisionTree extends AbstractCodegenerator
         $lines[] = '# executing predictions';
         $lines[] = 'predictions = model.predict(features)';
 
-        $lines[] = '';
-        $lines[] = '# saving predictions';
-        $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        if ($this->targetIsText()) {
+            $lines[] = '# converting predictions back to labels';
+            $lines[] = 'predictions_labels = label_encoder.inverse_transform(predictions)';
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions_labels, columns=["Prediction"])';
+        } else {
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        }
         $lines[] = 'result_df.to_csv("__TARGET_CSV_FILE__", index=False)';
         $result = implode(PHP_EOL, $lines);
 

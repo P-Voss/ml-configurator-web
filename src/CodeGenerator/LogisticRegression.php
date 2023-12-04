@@ -50,6 +50,9 @@ class LogisticRegression extends AbstractCodegenerator
         $lines[] = "from joblib import dump";
         $lines[] = "from sklearn.preprocessing import StandardScaler";
         $lines[] = "from sklearn.preprocessing import OneHotEncoder";
+        if ($this->targetIsText()) {
+            $lines[] = 'from sklearn.preprocessing import LabelEncoder';
+        }
         $lines[] = '';
         $lines[] = '# Logging-Konfiguration';
         $lines[] = sprintf(
@@ -76,6 +79,13 @@ class LogisticRegression extends AbstractCodegenerator
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
         );
+        if ($this->targetIsText()) {
+            $innerLines[] = 'label_encoder = LabelEncoder()';
+            $innerLines[] = 'target_encoded = label_encoder.fit_transform(target)';
+            $innerLines[] = sprintf("dump(label_encoder, '%s')", $this->model->getLabelEncoderPath());
+        } else {
+            $innerLines[] = 'target_encoded = target';
+        }
 
         $innerLines[] = sprintf(
             'categorical_columns = [%s]',
@@ -112,7 +122,7 @@ class LogisticRegression extends AbstractCodegenerator
         $innerLines[] = '';
         if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = sprintf(
-                'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=%s, random_state=42)',
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
                 1 - ($hyperparameter['trainingPercentage'] / 100)
             );
             $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
@@ -122,7 +132,7 @@ class LogisticRegression extends AbstractCodegenerator
             );
         } else {
             $innerLines[] = sprintf(
-                'features_train, features_val, target_train, target_val = train_test_split(features, target, test_size=%s, random_state=42)',
+                'features_train, features_val, target_train, target_val = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
                 1 - ($hyperparameter['trainingPercentage'] / 100)
             );
         }
@@ -351,6 +361,9 @@ class LogisticRegression extends AbstractCodegenerator
         $lines[] = '';
         $lines[] = "from joblib import load";
         $lines[] = "from sklearn.preprocessing import OneHotEncoder, StandardScaler";
+        if ($this->targetIsText()) {
+            $lines[] = "from sklearn.preprocessing import LabelEncoder";
+        }
         $lines[] = "import numpy as np";
         $lines[] = "import pandas as pd";
 
@@ -361,6 +374,10 @@ class LogisticRegression extends AbstractCodegenerator
         $lines[] = sprintf('scaler = load("%s")', $this->model->getScalerPath());
         $lines[] = '# loading encoder';
         $lines[] = sprintf('encoder = load("%s")', $this->model->getEncoderPath());
+        if ($this->targetIsText()) {
+            $lines[] = '# loading label encoder';
+            $lines[] = sprintf('label_encoder = load("%s")', $this->model->getLabelEncoderPath());
+        }
 
         $lines[] = '';
         $lines[] = '# loading source';
@@ -383,9 +400,18 @@ class LogisticRegression extends AbstractCodegenerator
         $lines[] = '';
         $lines[] = '# executing predictions';
         $lines[] = 'predictions = model.predict(features)';
-
-        $lines[] = '';
-        $lines[] = '# saving predictions';
+        if ($this->targetIsText()) {
+            $lines[] = '';
+            $lines[] = '# converting predictions back to labels';
+            $lines[] = 'predictions_labels = label_encoder.inverse_transform(predictions.round().astype(int))';
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions_labels, columns=["Prediction"])';
+        } else {
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        }
         $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
         $lines[] = sprintf('result_df.to_csv("%s", index=False)', $targetFile);
         $result = implode(PHP_EOL, $lines);
@@ -405,6 +431,9 @@ class LogisticRegression extends AbstractCodegenerator
         $lines[] = '';
         $lines[] = "from joblib import load";
         $lines[] = "from sklearn.preprocessing import OneHotEncoder, StandardScaler";
+        if ($this->targetIsText()) {
+            $lines[] = "from sklearn.preprocessing import LabelEncoder";
+        }
         $lines[] = "import numpy as np";
         $lines[] = "import pandas as pd";
 
@@ -415,6 +444,10 @@ class LogisticRegression extends AbstractCodegenerator
         $lines[] = 'scaler = load("__SCALER_FILE__")';
         $lines[] = '# loading encoder';
         $lines[] = 'encoder = load("__ENCODER_FILE__")';
+        if ($this->targetIsText()) {
+            $lines[] = '# loading label encoder';
+            $lines[] = 'label_encoder = load("__LABEL_ENCODER_FILE__")';
+        }
 
         $lines[] = '';
         $lines[] = '# loading source';
@@ -438,10 +471,17 @@ class LogisticRegression extends AbstractCodegenerator
         $lines[] = '# executing predictions';
         $lines[] = 'predictions = model.predict(features)';
 
-        $lines[] = '';
-        $lines[] = '# saving predictions';
-        $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
-        $lines[] = 'result_df.to_csv("__TARGET_CSV_FILE__", index=False)';
+        if ($this->targetIsText()) {
+            $lines[] = '# converting predictions back to labels';
+            $lines[] = 'predictions_labels = label_encoder.inverse_transform(predictions.round().astype(int))';
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions_labels, columns=["Prediction"])';
+        } else {
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        }
         $result = implode(PHP_EOL, $lines);
 
         return $result;

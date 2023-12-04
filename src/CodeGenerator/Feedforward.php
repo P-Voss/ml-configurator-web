@@ -50,6 +50,9 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = "from tensorflow.keras.callbacks import CSVLogger";
         $lines[] = "from sklearn.preprocessing import StandardScaler";
         $lines[] = "from sklearn.preprocessing import OneHotEncoder";
+        if ($this->targetIsText()) {
+            $lines[] = 'from sklearn.preprocessing import LabelEncoder';
+        }
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from tensorflow.keras.callbacks import EarlyStopping";
         $lines[] = "from joblib import dump";
@@ -118,6 +121,13 @@ class Feedforward extends AbstractCodegenerator
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
         );
+        if ($this->targetIsText()) {
+            $innerLines[] = 'label_encoder = LabelEncoder()';
+            $innerLines[] = 'target_encoded = label_encoder.fit_transform(target)';
+            $innerLines[] = sprintf("dump(label_encoder, '%s')", $this->model->getLabelEncoderPath());
+        } else {
+            $innerLines[] = 'target_encoded = target';
+        }
 
         $innerLines[] = sprintf(
             'categorical_columns = [%s]',
@@ -154,7 +164,7 @@ class Feedforward extends AbstractCodegenerator
         $innerLines[] = '';
         if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = sprintf(
-                'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=%s, random_state=42)',
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
                 1 - ($hyperparameter['trainingPercentage'] / 100)
             );
             $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
@@ -164,7 +174,7 @@ class Feedforward extends AbstractCodegenerator
             );
         } else {
             $innerLines[] = sprintf(
-                'features_train, features_val, target_train, target_val = train_test_split(features, target, test_size=%s, random_state=42)',
+                'features_train, features_val, target_train, target_val = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
                 1 - ($hyperparameter['trainingPercentage'] / 100)
             );
         }
@@ -301,6 +311,9 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = "from tensorflow.keras.callbacks import CSVLogger";
         $lines[] = "from sklearn.preprocessing import StandardScaler";
         $lines[] = "from sklearn.preprocessing import OneHotEncoder";
+        if ($this->targetIsText()) {
+            $lines[] = 'from sklearn.preprocessing import LabelEncoder';
+        }
         $lines[] = "from sklearn.model_selection import train_test_split";
         $lines[] = "from tensorflow.keras.callbacks import EarlyStopping";
         $lines[] = '';
@@ -321,6 +334,13 @@ class Feedforward extends AbstractCodegenerator
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
         );
+        if ($this->targetIsText()) {
+            $innerLines[] = 'label_encoder = LabelEncoder()';
+            $innerLines[] = 'target_encoded = label_encoder.fit_transform(target)';
+            $innerLines[] = "dump(label_encoder, '__LABEL_ENCODER_FILE__')";
+        } else {
+            $innerLines[] = 'target_encoded = target';
+        }
 
         $innerLines[] = sprintf(
             'text_features = data[[%s]]',
@@ -340,7 +360,7 @@ class Feedforward extends AbstractCodegenerator
         $innerLines[] = '';
         if ((int) $hyperparameter['testPercentage'] > 0) {
             $innerLines[] = sprintf(
-                'features_train, features_temp, target_train, target_temp = train_test_split(features, target, test_size=%s, random_state=42)',
+                'features_train, features_temp, target_train, target_temp = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
                 1 - ($hyperparameter['trainingPercentage'] / 100)
             );
             $testPercentage = $hyperparameter['testPercentage'] / (100 - $hyperparameter['trainingPercentage']);
@@ -350,7 +370,7 @@ class Feedforward extends AbstractCodegenerator
             );
         } else {
             $innerLines[] = sprintf(
-                'features_train, features_val, target_train, target_val = train_test_split(features, target, test_size=%s, random_state=42)',
+                'features_train, features_val, target_train, target_val = train_test_split(features, target_encoded, test_size=%s, random_state=42)',
                 1 - ($hyperparameter['trainingPercentage'] / 100)
             );
         }
@@ -445,6 +465,9 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = "from joblib import load";
         $lines[] = "import tensorflow as tf";
         $lines[] = "from sklearn.preprocessing import OneHotEncoder, StandardScaler";
+        if ($this->targetIsText()) {
+            $lines[] = "from sklearn.preprocessing import LabelEncoder";
+        }
         $lines[] = "import numpy as np";
         $lines[] = "import pandas as pd";
 
@@ -455,6 +478,10 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = sprintf('scaler = load("%s")', $this->model->getScalerPath());
         $lines[] = '# loading encoder';
         $lines[] = sprintf('encoder = load("%s")', $this->model->getEncoderPath());
+        if ($this->targetIsText()) {
+            $lines[] = '# loading label encoder';
+            $lines[] = sprintf('label_encoder = load("%s")', $this->model->getLabelEncoderPath());
+        }
 
         $lines[] = '';
         $lines[] = '# loading source';
@@ -478,9 +505,18 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = '# executing predictions';
         $lines[] = 'predictions = model.predict(features)';
 
-        $lines[] = '';
-        $lines[] = '# saving predictions';
-        $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        if ($this->targetIsText()) {
+            $lines[] = '';
+            $lines[] = '# converting predictions back to labels';
+            $lines[] = 'predictions_labels = label_encoder.inverse_transform(predictions.round().astype(int))';
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions_labels, columns=["Prediction"])';
+        } else {
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        }
         $lines[] = sprintf('result_df.to_csv("%s", index=False)', $targetFile);
         $result = implode(PHP_EOL, $lines);
 
@@ -497,6 +533,9 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = "from joblib import load";
         $lines[] = "import tensorflow as tf";
         $lines[] = "from sklearn.preprocessing import OneHotEncoder, StandardScaler";
+        if ($this->targetIsText()) {
+            $lines[] = "from sklearn.preprocessing import LabelEncoder";
+        }
         $lines[] = "import numpy as np";
         $lines[] = "import pandas as pd";
 
@@ -507,6 +546,10 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = 'scaler = load("__SCALER_FILE__")';
         $lines[] = '# loading encoder';
         $lines[] = 'encoder = load("__ENCODER_FILE__")';
+        if ($this->targetIsText()) {
+            $lines[] = '# loading encoder';
+            $lines[] = 'label_encoder = load("__LABEL_ENCODER_FILE__")';
+        }
 
         $lines[] = '';
         $lines[] = '# loading source';
@@ -530,9 +573,18 @@ class Feedforward extends AbstractCodegenerator
         $lines[] = '# executing predictions';
         $lines[] = 'predictions = model.predict(features)';
 
-        $lines[] = '';
-        $lines[] = '# saving predictions';
-        $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        if ($this->targetIsText()) {
+            $lines[] = '';
+            $lines[] = '# converting predictions back to labels';
+            $lines[] = 'predictions_labels = label_encoder.inverse_transform(predictions.round().astype(int))';
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions_labels, columns=["Prediction"])';
+        } else {
+            $lines[] = '';
+            $lines[] = '# saving predictions';
+            $lines[] = 'result_df = pd.DataFrame(predictions, columns=["Prediction"])';
+        }
         $lines[] = 'result_df.to_csv("__TARGET_CSV_FILE__", index=False)';
         $result = implode(PHP_EOL, $lines);
 
