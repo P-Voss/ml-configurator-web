@@ -65,8 +65,6 @@ class LayerController extends AbstractController
             ->setReturnSequences($request->get('returnSequences', false))
             ->setDropoutQuote($request->get('dropoutRate', 0) * 100);
 
-        $this->entityManager->persist($layer);
-
         try {
             $state->addLayer($layer);
             $this->entityManager->flush();

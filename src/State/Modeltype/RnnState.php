@@ -13,6 +13,9 @@ class RnnState extends AbstractState
 
     /**
      * @throws \Exception
+     * Can not add Dropout as first layer
+     * Can only add GRU and LSTM as first layer, following layers need to be dropout or dense
+     * Invalid GRU or LSTM layer for later layers will be turned into dense layer
      */
     public function addLayer(Layer $layer): StateInterface
     {
@@ -20,14 +23,46 @@ class RnnState extends AbstractState
         if ($this->model->getLayers()->count() === 0 and $type === LayerTypes::LAYER_TYPE_DROPOUT) {
             throw new \Exception("can not set Dropout as first layer");
         }
+        if ($this->model->getLayers()->count() === 0) {
+            $this->entityManager->persist($layer);
+            $this->model->addLayer($layer);
 
+            return $this;
+        }
+
+        if ($type === LayerTypes::LAYER_TYPE_LSTM || $type === LayerTypes::LAYER_TYPE_GRU) {
+            $denseLayer = new Layer();
+            $denseLayer->setRegularizationType($layer->getRegularizationType())
+                ->setReturnSequences(false)
+                ->setType(LayerTypes::LAYER_TYPE_DENSE->value)
+                ->setNeuronCount($layer->getNeuronCount())
+                ->setDropoutQuote($layer->getDropoutQuote())
+                ->setRecurrentDropoutRate(0)
+                ->setRegularizationLambda($layer->getRegularizationLambda())
+                ->setActivationFunction($layer->getActivationFunction());
+
+            $this->entityManager->persist($denseLayer);
+            $this->model->addLayer($denseLayer);
+            return $this;
+        }
+        $this->entityManager->persist($layer);
         $this->model->addLayer($layer);
+
         return $this;
     }
 
+    /**
+     * @param Layer $layer
+     * @return void
+     * deletes all layers behind the layer to delete to prevent invalid layer configurations
+     */
     public function removeLayer(Layer $layer)
     {
-        $this->model->removeLayer($layer);
+        foreach ($this->model->getLayers() as $existingLayer) {
+            if ($existingLayer->getId() >= $layer->getId()) {
+                $this->model->removeLayer($existingLayer);
+            }
+        }
     }
 
     public function getArchitectureType(): string
@@ -43,6 +78,9 @@ class RnnState extends AbstractState
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     public function setHyperParameter(array $params = [])
     {
         if ($params['id']) {

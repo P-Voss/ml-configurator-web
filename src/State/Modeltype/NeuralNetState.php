@@ -27,13 +27,23 @@ class NeuralNetState extends AbstractState
             throw new \Exception("can not set Dropout as first layer");
         }
 
+        $this->entityManager->persist($layer);
         $this->model->addLayer($layer);
         return $this;
     }
 
+    /**
+     * @param Layer $layer
+     * @return void
+     * deletes all layers behind the layer to delete to prevent invalid layer configurations
+     */
     public function removeLayer(Layer $layer)
     {
-        $this->model->removeLayer($layer);
+        foreach ($this->model->getLayers() as $existingLayer) {
+            if ($existingLayer->getId() >= $layer->getId()) {
+                $this->model->removeLayer($existingLayer);
+            }
+        }
     }
 
     public function getArchitectureType(): string
