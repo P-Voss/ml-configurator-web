@@ -3,6 +3,22 @@
         <div class="col-12">
             {{$t("label.neuralnetIntro")}}
         </div>
+        <div class="col-12">
+            <p>
+                Rekurrente neuronale Netze sind insbesondere für die Verarbeitung von sequentiellen Daten wie Zeitreihen geeignet. Dafür können in dem Netz die LSTM- sowie die GRU-Schichten hinugefügt werden.
+            </p>
+            <p>
+                Die effektive Konfiguration von RNNs erfordert gute Kenntnisse über die zu verarbeitenden Daten. Um den Prozess der Modell-Konfiguration im Rahmen dieses Projekts einfach zu halten, gelten für RNNs die folgenden Richtlinien:
+            </p>
+            <ul>
+                <li>
+                    Auf eine Dense-Schicht kann keine GRU- oder LSTM-Schicht folgen. LSTM und GRU benötigen mehrdimensionale Eingabedaten, die von einer Dense-Schicht nicht zur Verfügung gestellt werden können.
+                </li>
+                <li>
+                    Gru- und LSTM-Schichten können aktuell nur für die erste Schicht festgelegt werden. Konfigurationen in denen in späteren Schichten GRU oder LSTM angelegt werden werden als Dense-Schichten verarbeitet.
+                </li>
+            </ul>
+        </div>
 
         <div class="col-12 col-lg-8">
             <div class="h2">{{$t("headline.layertype")}}</div>
@@ -74,20 +90,7 @@
             <div class="h2">{{$t("headline.architecture")}}</div>
             <div class="row">
                 <div class="col-12" v-for="layer in layers">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-10">
-                                    <div class="card-title">
-                                        {{layertypeName(layer.type)}}
-                                    </div>
-                                </div>
-                                <div class="col-2">
-                                    <button class="btn btn-danger" @click="removeLayer(layer.id)">x</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <Layer :layer="layer" @remove-layer="removeLayer(layer.id)" />
                 </div>
             </div>
         </div>
@@ -121,6 +124,7 @@ import DenseLayerForm from "./Forms/DenseLayerForm.vue";
 import DropoutLayerForm from "./Forms/DropoutLayerForm.vue";
 import GruLayerForm from "./Forms/GruLayerForm.vue";
 import LstmLayerForm from "./Forms/LstmLayerForm.vue";
+import Layer from "./Layer.vue";
 
 export default {
     name: 'RnnArchitecture',
@@ -128,6 +132,7 @@ export default {
         layers: Array,
     },
     components: {
+        Layer,
         DenseLayerForm,
         DropoutLayerForm,
         GruLayerForm,

@@ -59,12 +59,12 @@
                 <button type="button" class="btn btn-outline-secondary" @click="toggleInfo('regularization')">?</button>
             </div>
             <div v-if="showingInfo === 'regularization'" class="form-text">
-                {{$t("helptext.regularizetionTypeNet")}}
+                {{$t("helptext.regularizationTypeNet")}}
                 <p>
-                    <span class="fw-bold">L1: </span>{{$t("helptext.regularizetionTypeNetL1")}}
+                    <span class="fw-bold">L1: </span>{{$t("helptext.regularizationTypeNetL1")}}
                 </p>
                 <p>
-                    <span class="fw-bold">L2: </span>{{$t("helptext.regularizetionTypeNetL2")}}
+                    <span class="fw-bold">L2: </span>{{$t("helptext.regularizationTypeNetL2")}}
                 </p>
             </div>
         </div>
@@ -75,7 +75,7 @@
 
             <div v-if="showingInfo === 'regularization'" class="form-text">
                 <p>
-                    <span class="fw-bold">Lambda: </span>{{$t("helptext.regularizetionTypeNetLambda")}}
+                    <span class="fw-bold">Lambda: </span>{{$t("helptext.regularizationTypeNetLambda")}}
                 </p>
             </div>
         </div>
