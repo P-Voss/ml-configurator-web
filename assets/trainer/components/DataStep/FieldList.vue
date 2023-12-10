@@ -1,39 +1,7 @@
 <template>
     <div class="row gy-2">
         <div class="col-12 col-lg-4 cardContainer" v-for="field in fieldConfigurations" :key="field.id">
-            <div class="card bg-info" >
-                <div class="card-body">
-                    <h5 class="card-title">{{ field.name }}</h5>
-                    <div class="row">
-                        <div class="col-4">
-                            <button v-if="!field.isIgnored" @click="toggleIgnore(field.id, true)" class="btn btn-primary btn-sm">
-                                Ignorieren
-                            </button>
-                            <button v-if="field.isIgnored" @click="toggleIgnore(field.id, false)" class="btn btn-primary btn-sm">
-                                Nicht ignorieren
-                            </button>
-                        </div>
-                        <div class="col-4">
-                            <button v-if="!field.isTarget" @click="toggleTarget(field.id, true)" class="btn btn-primary btn-sm">
-                                Als Zielvariable setzen
-                            </button>
-                            <button v-if="field.isTarget" @click="toggleTarget(field.id, false)" class="btn btn-secondary btn-sm">
-                                Als Feature verwenden
-                            </button>
-                        </div>
-<!--                        <div class="col-4">-->
-<!--                            <button @click="openConfigModal(field.name)" class="btn btn-primary btn-sm">-->
-<!--                                Konfigurieren-->
-<!--                            </button>-->
-<!--                        </div>-->
-                    </div>
-                    <div class="row" v-if="field.isTarget">
-                        <div class="col-12">
-                            <h4>Target</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <Field :field="field" @toggle-ignore="toggleIgnore" @toggle-target="toggleTarget" />
         </div>
 
         <!-- Modal -->
@@ -56,10 +24,11 @@
 <script>
 
 import FieldConfiguration from "./FieldConfiguration.vue";
+import Field from "./Field.vue";
 
 export default {
     name: 'FieldList',
-    components: {FieldConfiguration},
+    components: {Field, FieldConfiguration},
     props: {
         fieldConfigurations: Array
     },
@@ -71,11 +40,11 @@ export default {
         }
     },
     methods: {
-        toggleIgnore(fieldId, setIgnore) {
-            this.$emit('toggle-ignore', {fieldId: fieldId, setIgnore: setIgnore})
+        toggleIgnore(params) {
+            this.$emit('toggle-ignore', {fieldId: params.id, setIgnore: params.val})
         },
-        toggleTarget(fieldId, markTarget) {
-            this.$emit('toggle-target', {fieldId: fieldId, markTarget: markTarget})
+        toggleTarget(params) {
+            this.$emit('toggle-target', {fieldId: params.id, markTarget: params.val})
         },
         openConfigModal(fieldname) {
             for (let field of this.fieldConfigurations) {
@@ -97,7 +66,7 @@ export default {
         },
         saveConfiguration(form) {
             this.$emit('save-configuration', form)
-        }
+        },
     }
 }
 
