@@ -286,10 +286,11 @@ export default {
                 this.$emit('executed-task', response.data.validTraining)
                 await this.loadTasks()
             } else {
+                alert("Beim Training trat ein Fehler auf. Versuche es nochmal, oder ändere eventuell die Konfiguration. Im aktuellen Entwicklungsstand kann es vorkommen, dass manche Konfigurationen noch Fehler verursachen.")
                 this.activeTask.state = "COMPLETED"
                 this.state = "INIT"
                 this.stateMessage = ""
-                this.$emit('executed-task', response.data.validTraining)
+                this.$emit('executed-task', false)
                 await this.loadTasks()
             }
         },
