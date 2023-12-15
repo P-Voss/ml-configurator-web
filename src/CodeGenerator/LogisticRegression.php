@@ -73,7 +73,7 @@ class LogisticRegression extends AbstractCodegenerator
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            'data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)',
+            'data = pd.read_csv("%s", delimiter=";", header=0)',
             $this->getDataPath($pathGenerator)
         );
         $innerLines[] = sprintf('target = data["%s"]',
@@ -246,7 +246,7 @@ class LogisticRegression extends AbstractCodegenerator
 
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
-        $innerLines[] = 'data = pd.read_csv("__CSV_FILE__", delimiter=";", header=0, error_bad_lines=False)';
+        $innerLines[] = 'data = pd.read_csv("__CSV_FILE__", delimiter=";", header=0)';
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
         );
@@ -381,7 +381,7 @@ class LogisticRegression extends AbstractCodegenerator
 
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)', $sourceFile);
+        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0)', $sourceFile);
 
         $lines[] = '';
         $lines[] = sprintf(
@@ -451,7 +451,7 @@ class LogisticRegression extends AbstractCodegenerator
 
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0, error_bad_lines=False)';
+        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0)';
 
         $lines[] = '';
         $lines[] = sprintf(

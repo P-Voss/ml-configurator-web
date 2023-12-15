@@ -85,7 +85,7 @@ class Svm extends AbstractCodegenerator
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            'data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)',
+            'data = pd.read_csv("%s", delimiter=";", header=0)',
             $this->getDataPath($pathGenerator)
         );
         $innerLines[] = sprintf('target = data["%s"]',
@@ -319,7 +319,7 @@ class Svm extends AbstractCodegenerator
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
         $innerLines[] = sprintf(
-            'data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)',
+            'data = pd.read_csv("%s", delimiter=";", header=0)',
             $this->getDataPath($pathGenerator)
         );
         $innerLines[] = sprintf('target = data["%s"]',
@@ -476,7 +476,7 @@ class Svm extends AbstractCodegenerator
 
         $innerLines[] = 'start_time = time.time()';
         $innerLines[] = '';
-        $innerLines[] = 'data = pd.read_csv("__DATA_FILE__", delimiter=";", header=0, error_bad_lines=False)';
+        $innerLines[] = 'data = pd.read_csv("__DATA_FILE__", delimiter=";", header=0)';
         $innerLines[] = sprintf('target = data["%s"]',
             $targetName
         );
@@ -612,7 +612,7 @@ class Svm extends AbstractCodegenerator
         $lines[] = sprintf('label_encoder = load("%s")', $this->model->getEncoderPath());
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)', $sourceFile);
+        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0)', $sourceFile);
         $lines[] = '';
         $lines[] = sprintf(
             'number_features = data[[%s]]',
@@ -659,7 +659,7 @@ class Svm extends AbstractCodegenerator
 
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0, error_bad_lines=False)', $sourceFile);
+        $lines[] = sprintf('data = pd.read_csv("%s", delimiter=";", header=0)', $sourceFile);
 
         $lines[] = '';
         $lines[] = sprintf(
@@ -710,7 +710,7 @@ class Svm extends AbstractCodegenerator
 
         $lines[] = '';
         $lines[] = '# loading source';
-        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0, error_bad_lines=False)';
+        $lines[] = 'data = pd.read_csv("__SOURCE_CSV_FILE__", delimiter=";", header=0)';
 
         $lines[] = '';
         $lines[] = sprintf(

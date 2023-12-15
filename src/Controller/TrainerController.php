@@ -309,7 +309,7 @@ class TrainerController extends AbstractController
             }
         }
         usort($completedTasks, function (TrainingTask $t1, TrainingTask $t2) {
-            return $t1->getId() > $t2->getId();
+            return ($t1->getId() < $t2->getId()) ? -1 : 1;
         });
 
         return new JsonResponse([
