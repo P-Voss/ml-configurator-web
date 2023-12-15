@@ -194,10 +194,14 @@ class TrainingTask implements \JsonSerializable
         if ($this->reportPath && file_exists($this->reportPath)) {
             $result = json_decode(file_get_contents($this->reportPath));
         }
-        $log = [];
-        if ($this->logPath && file_exists($this->logPath)) {
-            $log = file_get_contents($this->logPath);
-        }
+        /**
+         * @todo Log for neural networks contains filepaths for the models
+         * removing log entries from response until paths are anonymised
+         */
+//        $log = [];
+//        if ($this->logPath && file_exists($this->logPath)) {
+//            $log = file_get_contents($this->logPath);
+//        }
 
         return [
             'id' => $this->id,
@@ -207,7 +211,6 @@ class TrainingTask implements \JsonSerializable
             'startDatetime' => $startDatetime,
             'endDatetime' => $endDatetime,
             'result' => $result,
-            'log' => $log,
             'modelHash' => $this->modelHash,
         ];
     }
