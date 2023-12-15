@@ -30,6 +30,15 @@ body {
     border: 2px solid #007bff;  /* Dies ist der Bootstrap-Primärfarbe ähnlich */
 }
 
+.activeCard {
+    color: black !important;
+    opacity: .85 !important;
+}
+.activeCard .text-muted {
+    color: black !important;
+    opacity: .85 !important;
+}
+
 .cardContainer {
     display: flex;
     flex-direction: column;

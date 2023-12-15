@@ -1,6 +1,6 @@
 <template>
     <div>
-        <ul class="nav nav-pills mb-3 justify-content-center nav-fill d-none d-lg-flex" id="trainer-tab-lg" role="tablist">
+        <ul class="nav nav-pills mb-3 justify-content-center nav-fill d-none d-lg-flex" id="trainer-tab-lg" role="tablist" data-bs-theme="dark">
             <li class="nav-item" role="presentation">
                 <a class="nav-link d-flex align-items-center bg-success text-light"
                    :href="configuratorUrl" role="tab"
@@ -57,7 +57,7 @@
         </ul>
 
 
-        <ul class="nav nav-pills mb-3 justify-content-center flex-column nav-fill d-flex d-lg-none gap-2" id="trainer-tab" role="tablist">
+        <ul class="nav nav-pills mb-3 justify-content-center flex-column nav-fill d-flex d-lg-none gap-2" id="trainer-tab" role="tablist" data-bs-theme="dark">
             <li class="nav-item" role="presentation">
                 <a class="nav-link d-flex align-items-center bg-success text-light"
                    id="trainer-data-prep-tab" :href="configuratorUrl" role="tab" aria-controls="trainer-data-prep"

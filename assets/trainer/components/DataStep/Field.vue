@@ -13,7 +13,7 @@
             </h5>
             <div class="row">
                 <div class="col-6">
-                    <button v-if="!field.isIgnored" @click="this.$emit('toggle-ignore', {id: field.id, val: true})" class="btn btn-primary btn-sm">
+                    <button v-if="!field.isIgnored" @click="this.$emit('toggle-ignore', {id: field.id, val: true})" class="btn btn-warning btn-sm">
                         Ignorieren
                     </button>
                     <button v-if="field.isIgnored" @click="this.$emit('toggle-ignore', {id: field.id, val: false})" class="btn btn-primary btn-sm">
@@ -21,10 +21,10 @@
                     </button>
                 </div>
                 <div class="col-6">
-                    <button v-if="!field.isTarget" @click="this.$emit('toggle-target', {id: field.id, val: true})" class="btn btn-primary btn-sm">
+                    <button v-if="!field.isTarget" @click="this.$emit('toggle-target', {id: field.id, val: true})" class="btn btn-danger btn-sm">
                         Als Zielvariable setzen
                     </button>
-                    <button v-if="field.isTarget" @click="this.$emit('toggle-target', {id: field.id, val: false})" class="btn btn-secondary btn-sm">
+                    <button v-if="field.isTarget" @click="this.$emit('toggle-target', {id: field.id, val: false})" class="btn btn-info btn-sm">
                         Als Feature verwenden
                     </button>
                 </div>
@@ -43,20 +43,20 @@ export default {
         classes() {
             if (this.field.isTarget) {
                 return {
-                    'bg-success': true,
-                    'text-light': true,
-                    'bg-gradient': true
+                    'bg-secondary': true,
+                    'bg-gradient': true,
+                    'border-primary': true,
                 }
             }
             if (this.field.isIgnored) {
                 return {
-                    'bg-light': true,
-                    'bg-gradient': true
+                    'bg-secondary': true,
+                    'bg-gradient': true,
+                    'border-warning': true,
                 }
             }
             return {
                 'bg-secondary': true,
-                'text-light': true,
                 'bg-gradient': true
             }
         }
