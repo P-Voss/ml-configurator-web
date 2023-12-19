@@ -156,18 +156,18 @@ class LogisticRegression extends AbstractCodegenerator
         $innerLines[] = '';
         $innerLines[] = '# gather validation data';
         $innerLines[] = 'target_pred_val = model.predict(features_val)';
-        $innerLines[] = 'cm_val = confusion_matrix(target_val, target_pred)';
-        $innerLines[] = 'cr_val = classification_report(target_val, target_pred)';
+        $innerLines[] = 'cm_val = confusion_matrix(target_val, target_pred_val)';
+        $innerLines[] = 'cr_val = classification_report(target_val, target_pred_val, output_dict=True)';
 
         $innerLines[] = '# saving model';
         $innerLines[] = sprintf('dump(model, "%s")', $modelPath);
         $innerLines[] = '';
         $innerLines[] = '# logging';
         $innerLines[] = 'results = {';
-        $innerLines[] = '    "cm_val": cm_val,';
+        $innerLines[] = '    "cm_val": cm_val.tolist(),';
         $innerLines[] = '    "cr_val": cr_val,';
-        $innerLines[] = '    "cm_test": "",';
-        $innerLines[] = '    "cr_test": "",';
+        $innerLines[] = '    "cm_test": np.zeros((2, 2)).tolist(),';
+        $innerLines[] = '    "cr_test": {},';
         $innerLines[] = '    "duration": end_time - start_time';
         $innerLines[] = '}';
 
@@ -177,9 +177,9 @@ class LogisticRegression extends AbstractCodegenerator
             $innerLines[] = '# gather performance data';
             $innerLines[] = 'target_pred_test = model.predict(features_test)';
             $innerLines[] = 'cm_test = confusion_matrix(target_test, target_pred_test)';
-            $innerLines[] = 'cr_test = classification_report(target_test, target_pred_test)';
+            $innerLines[] = 'cr_test = classification_report(target_test, target_pred_test, output_dict=True)';
 
-            $innerLines[] = 'results["cm_test"] = cm_test';
+            $innerLines[] = 'results["cm_test"] = cm_test.tolist()';
             $innerLines[] = 'results["cr_test"] = cr_test';
         }
 
